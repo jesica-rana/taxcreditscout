@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runPipeline } from "@/lib/pipeline";
 import { putSession } from "@/lib/kv";
+import { extractFromDocument } from "@/lib/prompts/document-extractor";
 import type { RawIntake, Session } from "@/lib/types";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
@@ -8,7 +9,8 @@ import { z } from "zod";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-const RawSchema = z.object({
+const FormSchema = z.object({
+  source: z.literal("form").optional(),
   business_description: z.string().min(5).max(500),
   state: z.string().length(2),
   city: z.string().nullable(),
@@ -25,12 +27,49 @@ const RawSchema = z.object({
   email: z.string().email().nullable(),
 });
 
+const PdfSchema = z.object({
+  source: z.literal("pdf"),
+  hint: z
+    .object({
+      state: z.string().length(2).optional(),
+      city: z.string().nullable().optional(),
+    })
+    .nullable()
+    .optional(),
+  pages: z
+    .array(
+      z.object({
+        redactedText: z.string().max(50_000),
+        redactedImageDataUrl: z.string().startsWith("data:image/"),
+      })
+    )
+    .min(1)
+    .max(10),
+});
+
 export async function POST(req: NextRequest) {
-  let raw: RawIntake;
+  let body: any;
   try {
-    const body = await req.json();
-    raw = RawSchema.parse(body);
-  } catch (err) {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  let raw: RawIntake;
+
+  try {
+    if (body.source === "pdf") {
+      const parsed = PdfSchema.parse(body);
+      // Stage 1a: Vision API extracts a RawIntake from the redacted document
+      raw = await extractFromDocument({
+        pages: parsed.pages,
+        userHint: parsed.hint ?? undefined,
+      });
+    } else {
+      raw = FormSchema.parse(body);
+    }
+  } catch (err: any) {
+    console.error("intake input invalid:", err?.message);
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
 

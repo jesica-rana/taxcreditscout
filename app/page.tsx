@@ -11,10 +11,15 @@ export default function LandingPage() {
           Your accountant is missing{" "}
           <span className="text-money">$14,000</span> in tax credits.
         </h1>
-        <p className="mt-6 text-xl text-ink/80 max-w-2xl">
-          Answer 5 questions. Our AI scans 47 federal, 200+ state, and 100+
-          local tax credits to find every one your business qualifies for. Take
-          the report to your CPA.
+        <p className="mt-6 text-2xl font-semibold text-money inline-flex items-center gap-2">
+          🔒 We never see your SSN.
+        </p>
+        <p className="mt-4 text-xl text-ink/80 max-w-2xl">
+          Upload your tax return — or answer 5 questions. Either way, our AI
+          scans 47 federal, 200+ state, and 100+ local tax credits to find every
+          one your business qualifies for. PDFs are parsed and redacted
+          <strong> in your browser</strong> — nothing personal ever leaves your
+          device.
         </p>
         <div className="mt-10 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
           <Link
@@ -30,6 +35,54 @@ export default function LandingPage() {
         <p className="mt-4 text-sm text-ink/50">
           30-second checkout · 12-page PDF · CPA handoff sheet included
         </p>
+      </section>
+
+      <section className="px-6 py-16 bg-paper border-t border-ink/10">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-3xl font-serif mb-10">How we protect your data</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            <div>
+              <div className="text-3xl mb-3">🔒</div>
+              <h3 className="text-lg font-semibold mb-2">
+                PDF parsed in your browser
+              </h3>
+              <p className="text-ink/70">
+                Your tax return never touches our servers. We use{" "}
+                <code className="text-sm">pdfjs-dist</code> to read the file
+                locally, then strip every piece of PII before any network
+                request.
+              </p>
+            </div>
+            <div>
+              <div className="text-3xl mb-3">✏️</div>
+              <h3 className="text-lg font-semibold mb-2">
+                You review every redaction
+              </h3>
+              <p className="text-ink/70">
+                SSN, EIN, name, address, phone, account numbers — all stripped
+                client-side. The preview UI shows you exactly what's being
+                removed before you approve.
+              </p>
+            </div>
+            <div>
+              <div className="text-3xl mb-3">🗑</div>
+              <h3 className="text-lg font-semibold mb-2">Nothing stored</h3>
+              <p className="text-ink/70">
+                Our pipeline only sees de-identified line items. Reports
+                auto-delete after 90 days. The code is{" "}
+                <a
+                  href="https://github.com/jesica-rana/taxcreditscout"
+                  className="underline"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  open-source
+                </a>{" "}
+                — verify it yourself.
+              </p>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section className="px-6 py-16 bg-ink text-paper">
@@ -131,6 +184,10 @@ export default function LandingPage() {
 }
 
 const FAQ = [
+  {
+    q: "Do you see my SSN or tax return?",
+    a: "No. If you upload a PDF, it's parsed and redacted entirely in your browser before anything is sent. Our backend only ever sees de-identified line items. You can verify this yourself in the open-source repo.",
+  },
   {
     q: "Is this tax advice?",
     a: "No. We're a discovery tool. Take the report to your CPA, who files your return.",

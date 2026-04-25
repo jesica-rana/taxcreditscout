@@ -1,6 +1,16 @@
 # Marketing & Distribution Playbook
 
-You are not selling software. You are selling **found money before a deadline.** Every piece of copy should reinforce: (1) money you didn't know about, (2) finite time, (3) low effort to claim it.
+You are selling **two things stacked together**:
+1. **Found money before a deadline.** (Original wedge.)
+2. **Privacy.** "We never see your SSN." (New wedge.)
+
+Stacked, these convert harder than either alone. Money beats privacy as a *desire*, but privacy unlocks the *purchase* by removing the biggest objection ("I don't want to upload my tax return to a startup").
+
+Copy hierarchy (in order of importance per page):
+1. The dollar number ("$14,000 your CPA missed")
+2. The privacy promise ("never leaves your browser")
+3. The deadline ("70 days until July 4")
+4. The CPA-handoff angle ("take this to your accountant")
 
 ---
 
@@ -20,8 +30,11 @@ You are not selling software. You are selling **found money before a deadline.**
 **Headline:**
 Your accountant is missing $14,000 in tax credits.
 
+**Sub-headline (privacy hook):**
+🔒 We never see your SSN. Your tax return is processed entirely in your browser.
+
 **Subhead:**
-Answer 5 questions. Our AI scans 47 federal, 200+ state, and 100+ local credits to find every one you qualify for. Take the report to your CPA.
+Upload your last tax return (or answer 5 questions). Our AI scans 47 federal, 200+ state, and 100+ local credits to find every one you qualify for. Take the report to your CPA.
 
 **Deadline strip (top of page, red, sticky):**
 ⏱ **70 days until July 4, 2026** — last chance for retroactive R&D credits (tax years 2022–2024). After that, this money is permanently gone.
@@ -33,6 +46,15 @@ Answer 5 questions. Our AI scans 47 federal, 200+ state, and 100+ local credits 
 30-second checkout · 12-page PDF · CPA handoff sheet included
 
 ### Below the fold
+
+**Section 0 — "How we protect your data" (NEW, place above "What we check")**
+
+Three-card grid:
+- 🔒 **PDF parsed in your browser.** Your tax return never touches our servers.
+- ✏️ **PII redacted before send.** SSN, EIN, name, address — all stripped client-side. You review every redaction before anything is sent.
+- 🗑 **Nothing stored.** Our pipeline only sees de-identified line items. Reports auto-delete after 90 days.
+
+Below the cards: a small animation/screenshot showing the PDF → redactions appearing → only redacted text shipping out. Caption: *"Enforced by topology, not policy. Open-source on [GitHub](https://github.com/jesica-rana/taxcreditscout) — verify it yourself."*
 
 **Section 1 — "What we check"**
 Three-card grid:
@@ -66,7 +88,23 @@ Disclaimer: This product provides informational research and is not tax advice. 
 
 ## Launch posts (use these)
 
-### LinkedIn (THE channel for B2B SMB founders)
+### LinkedIn (THE channel for B2B SMB founders) — privacy-first version
+
+> Most accountants only know about 5–6 federal tax credits. There are 47 federal credits. Plus 200+ state. Plus 100+ local.
+>
+> I built an AI tool that finds every credit your business qualifies for. Average finding: $14,000.
+>
+> But here's what's different: **we never see your SSN.**
+>
+> Other tools (TaxCredit.ai, Neo.Tax, MainStreet) make you upload your raw tax return. Ours parses the PDF *in your browser*, redacts every piece of PII before anything is sent, and lets you review every redaction. Only de-identified line items reach our pipeline.
+>
+> If you're a small business owner, the R&D retroactive election deadline is July 4. After that, this money is gone forever.
+>
+> [link]
+>
+> Code is open-source — you can verify the privacy guarantees yourself.
+
+### LinkedIn — original version (use for round 2)
 
 > Most accountants only know about 5–6 federal tax credits.
 >
@@ -144,7 +182,36 @@ For anyone with a CPA: do this audit before July 4 or you lose retroactive R&D c
 
 (Different angle: deadline-driven. Educational tone. Link in comments after engagement.)
 
-### Hacker News (Show HN)
+### Hacker News (Show HN) — privacy-first version (recommended)
+
+**Title:**
+Show HN: Tax credit discovery that never sees your SSN — client-side PDF redaction
+
+**Body:**
+
+> Hi HN. Built this for a 72-hr revenue-judged hackathon.
+>
+> Premise: every other tax-credit tool (TaxCredit.ai, Neo.Tax, MainStreet, Instead) makes you upload your raw tax return to their servers. That's a hard sell — most SMB owners aren't comfortable handing their SSN/EIN/financials to an AI startup. So I built one where the PDF never leaves the browser.
+>
+> Stack:
+> - `pdfjs-dist` parses the PDF client-side
+> - regex + `compromise` (NER) redact SSN, EIN, name, address, phone, email, account numbers — all in-browser
+> - User reviews every redaction in a preview UI before approving
+> - Only the redacted page image + de-identified text get POSTed
+> - Server runs Vision API → Qdrant retrieval → 4-stage agent pipeline (profile → search → verify → compose)
+> - Final report PDF re-injects the user's name/EIN client-side at render time, so their downloaded PDF has their info but our backend never saw it
+>
+> The privacy property is enforced by topology — the redaction happens before the network boundary. Open source: [github link]
+>
+> Other interesting bits: semantic search (Qdrant) bridges the gap between user inputs and IRS legalese — "we hired three people on food stamps" matches WOTC even though the eligibility text says "SNAP recipients." LLM only generates prose; dollar amounts and form numbers come straight from data so it can't hallucinate.
+>
+> Disclaimer: not tax advice — output is a research report you take to your CPA.
+>
+> [link]
+>
+> Feedback welcome, especially on the redaction patterns and the prompts.
+
+### Hacker News (Show HN) — original (use as fallback)
 
 **Title:**
 Show HN: TaxCreditScout – AI-indexed every U.S. tax credit, finds the ones you missed

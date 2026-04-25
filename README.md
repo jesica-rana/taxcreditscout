@@ -1,12 +1,14 @@
 # TaxCreditScout
 
-> **Find every federal, state, and local tax credit your business qualifies for — including the ones your CPA missed.**
+> **Find every federal, state, and local tax credit your business qualifies for — without ever uploading your SSN.**
 
 Built for the **Build-a-Company-a-Thon** (72-hour revenue-or-bust hackathon).
 
-The wedge: every other tool (TaxCredit.ai, Neo.Tax, MainStreet, etc.) covers **one** credit (R&D). Nobody finds R&D + WOTC + Section 179 + 50 state credits + opportunity zones in one shot. We do.
+**The wedge — privacy.** Every other tool in this space (TaxCredit.ai, Neo.Tax, MainStreet, Instead.com) requires you to upload your raw tax return. We don't. Your PDF is parsed in your browser, your name and SSN are redacted in your browser, and only de-identified financial line items leave your device. Enforced by topology, not policy.
 
-The urgency: **July 4–6, 2026** is the last day SMBs can retroactively claim R&D credits for tax years 2022–2024 under the One Big Beautiful Bill Act. ~70 days from now. After that, the money is permanently gone.
+**The breadth.** We also cover the *full* credit landscape: R&D + WOTC + Section 179 + Small Biz Health Care + Paid Family Leave + 50 state credits + opportunity zones — not just R&D like every competitor.
+
+**The urgency.** July 4–6, 2026 is the last day SMBs can retroactively claim R&D credits for tax years 2022–2024 under the One Big Beautiful Bill Act. ~70 days from now.
 
 ## Stack
 

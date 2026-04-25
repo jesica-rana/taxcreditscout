@@ -1,44 +1,67 @@
 # Architecture
 
+## Privacy posture (the wedge)
+
+**Your tax return never leaves your browser.**
+
+The defining architectural property of this product: PDFs are parsed client-side, PII is redacted client-side, and only de-identified text + a redacted page image leave the user's device. The user's name, SSN, EIN, address, phone number, email, and bank account numbers are stored only in browser memory (and the final report PDF the user downloads), never in our database, never in OpenAI logs, never in Vercel logs.
+
+We *do* see: financial line items (wages, R&D expenses, equipment purchases, health insurance premiums, hiring counts). Those are exactly the inputs we need to find credits. We *don't* see: who any of those numbers belong to.
+
+This is enforced by topology, not policy. The redaction happens before the network boundary.
+
 ## System diagram
 
 ```
-┌──────────────┐     ┌──────────────────────────────────────────────┐
-│  Browser     │     │  Vercel (Next.js App Router)                 │
-│              │ ──► │                                              │
-│  Landing     │     │  app/page.tsx       → static                 │
-│  Intake      │     │  app/intake         → form (client)          │
-│  Results     │     │  app/results/[id]   → SSR, blurred preview   │
-│  Report      │     │  app/report/[id]    → SSR, gated by paid bit │
-└──────────────┘     │                                              │
-                     │  app/api/intake     → orchestrates pipeline  │
-                     │  app/api/checkout   → Stripe session create  │
-                     │  app/api/webhook    → Stripe webhook handler │
-                     │  app/api/report/pdf → react-pdf stream       │
-                     └─────────────┬────────────────────────────────┘
-                                   │
-                ┌──────────────────┼──────────────────┐
-                ▼                  ▼                  ▼
-        ┌──────────────┐  ┌──────────────┐  ┌──────────────┐
-        │  OpenAI API  │  │  Qdrant      │  │  Stripe      │
-        │              │  │  Cloud       │  │              │
-        │  GPT-5       │  │              │  │  Checkout    │
-        │  embed-3-sm  │  │  collection: │  │  Webhook     │
-        │              │  │  tax_credits │  │              │
-        └──────────────┘  └──────────────┘  └──────────────┘
-                                   │
-                                   ▼
-                         ┌──────────────────┐
-                         │  Vercel KV       │
-                         │                  │
-                         │  session:{id} →  │
-                         │  { profile,      │
-                         │    report,       │
-                         │    paid: bool }  │
-                         └──────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│  BROWSER (privacy boundary)                                      │
+│                                                                  │
+│  app/intake/page.tsx                                             │
+│    ┌────────────┐    ┌──────────────┐    ┌─────────────────┐    │
+│    │ PDF upload │ ─► │ pdfjs-dist   │ ─► │ lib/redactor.ts │    │
+│    └────────────┘    │ text + image │    │ regex + NER     │    │
+│                      └──────────────┘    └────────┬────────┘    │
+│                                                   │             │
+│    ┌──────────────────────────────────────────────▼──────────┐  │
+│    │ components/RedactionPreview.tsx                         │  │
+│    │   - shows every redacted token                          │  │
+│    │   - user reviews + approves                             │  │
+│    │   - PII tokens kept in browser memory ONLY              │  │
+│    └──────────────────────────────┬───────────────────────────┘ │
+│                                   │ (only redacted text + img)  │
+└───────────────────────────────────┼─────────────────────────────┘
+                                    ▼
+┌──────────────────────────────────────────────────────────────────┐
+│  Vercel (Next.js App Router)                                     │
+│                                                                  │
+│  app/api/intake → runs the pipeline:                             │
+│    1. Vision API extracts profile from redacted image            │
+│    2. Profile-builder produces 8 search queries                  │
+│    3. Qdrant retrieves ~50 credit candidates                     │
+│    4. Verifier filters to ~7 with confidence ≥ 0.6               │
+│    5. Composer produces the structured Report                    │
+│                                                                  │
+│  app/api/checkout → Stripe session                               │
+│  app/api/webhook  → Stripe webhook → marks paid                  │
+└──────────────────┬───────────────────────────────────────────────┘
+                   │
+        ┌──────────┼──────────┐
+        ▼          ▼          ▼
+   ┌────────┐ ┌────────┐ ┌────────┐
+   │ OpenAI │ │ Qdrant │ │ Stripe │
+   └────────┘ └────────┘ └────────┘
+                   │
+                   ▼
+            ┌──────────────┐
+            │ Vercel KV    │
+            │ session:{id} │
+            │ NO PII       │
+            └──────────────┘
 ```
 
-We use Vercel KV (or Upstash Redis) as the only mutable state store. Each intake produces a session ID, and we stash `{profile, report, paid}` keyed by that ID. No user accounts. Reports auto-expire after 90 days.
+We use Vercel KV (or Upstash Redis) as the only server-side state store. Each intake produces a session ID, and we stash `{profile, report, paid}` keyed by that ID. **The session record contains NO PII** — only redacted financials and inferred attributes. No user accounts. Reports auto-expire after 90 days.
+
+When the user downloads their final PDF report, the browser re-injects their PII (name, business name, EIN) onto the cover page. That re-injection happens entirely in the client at PDF render time.
 
 ---
 
@@ -117,13 +140,63 @@ Who qualifies: {plain_language_qualifies}.
 
 ---
 
+## Browser-side PDF & redaction pipeline
+
+This runs entirely in the user's browser before anything hits the network.
+
+### Stage 0a — PDF parsing (`lib/pdf-parser.ts`)
+
+- `pdfjs-dist` extracts text content (preserving page + position)
+- For each page, render to `<canvas>` at 2× scale → produce a base64 PNG data URL
+- Output: `{ pages: { text, imageDataUrl }[] }`
+
+### Stage 0b — Redaction (`lib/redactor.ts`)
+
+Targeted regex passes for high-confidence PII:
+- SSN: `\b\d{3}-\d{2}-\d{4}\b`
+- EIN: `\b\d{2}-\d{7}\b`
+- Phone: variants of `\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}`
+- Email: standard RFC pattern
+- ZIP: `\b\d{5}(-\d{4})?\b`
+- Bank account: digit runs of 8–17 prefixed by ACCT/ACCOUNT
+- Routing: 9-digit runs prefixed by RTN/ROUTING
+
+Then `compromise` (~150KB) runs NER for:
+- Person names
+- Organization names
+
+Each redacted span produces a `PiiToken { type, value, start, end, page }`. The redactor returns:
+- `redactedPages: { text, imageDataUrl }[]` — text with `[REDACTED:SSN]` style markers; image with black-bar overlays at PII bounding boxes
+- `tokens: PiiToken[]` — kept in browser memory ONLY for re-injection at report time
+
+### Stage 0c — Redaction preview (`components/RedactionPreview.tsx`)
+
+The trust UI. Shows the redacted image side-by-side with a list of every redacted token (type + position). User can:
+- Click any kept text to manually mark it as PII
+- Click any redaction to un-redact (false positive)
+- Tick "I've reviewed the redactions" to enable the submit button
+
+Only after this gate do we POST to `/api/intake` with `{ redactedPages, sessionId }`. PII tokens stay client-side.
+
+---
+
 ## The agent pipeline
 
-`lib/pipeline.ts` chains 4 stages. All stages are JSON-mode OpenAI calls so we never parse free text.
+`lib/pipeline.ts` chains 5 stages (1 new + the original 4). All stages are JSON-mode OpenAI calls so we never parse free text.
 
-### Stage 1 — Profile Builder
+### Stage 1a — Document extractor (PDF path only) (`lib/prompts/document-extractor.ts`)
 
-**Input:** raw form answers (5 fields)
+**Input:** redacted page images (base64 PNGs)
+**Output:** structured `RawIntake` (same shape as the form path)
+**Model:** GPT-4o vision; JSON mode
+
+Vision reads the redacted page image and extracts: industry signal, employee count, revenue band, line items related to wages / equipment / health insurance / R&D / hiring. It cannot extract PII because PII is already covered by black bars.
+
+If the user came in via the form path, this stage is skipped. Either way, the next stage gets a `RawIntake`.
+
+### Stage 1b — Profile Builder
+
+**Input:** `RawIntake` (5 fields)
 **Output:** `UserProfile` with `derived_queries` (8 short search queries)
 **Model:** `gpt-5` (or whatever they have); JSON mode
 **Why this stage:** users can't write good vector queries. We need to translate "we hired 3 people, bought a forklift, did some R&D" into 8 distinct semantic queries that hit different parts of the corpus.
