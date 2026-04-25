@@ -1,0 +1,35 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# next.js
+.next/
+out/
+build/
+dist/
+
+# env
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# misc
+.DS_Store
+*.pem
+.idea/
+.vscode/
+*.log
+.turbo/
+
+# local data
+data/credits.json
+data/cache/
+data/raw/
+*.tsbuildinfo
+next-env.d.ts
+
+# vercel
+.vercel
