@@ -1,0 +1,209 @@
+/* === Fonts (must be first) === */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600;6..72,700&display=swap');
+
+/* === Theme tokens === */
+:root,
+[data-theme='dark'] {
+  --bg: #0a0a0b;
+  --surface-1: #131316;
+  --surface-2: #1a1a1f;
+  --border: #27272a;
+  --border-strong: #3f3f46;
+  --text: #fafafa;
+  --text-2: #a1a1aa;
+  --text-3: #71717a;
+  --money: #84e29b;
+  --money-strong: #4ade80;
+  --warn: #fbbf24;
+  --accent: #fafafa;
+  --accent-strong: #ffffff;
+  --shadow: 0 1px 0 rgba(255, 255, 255, 0.04), 0 8px 24px rgba(0, 0, 0, 0.4);
+  --grid-dot: rgba(255, 255, 255, 0.05);
+  color-scheme: dark;
+}
+
+[data-theme='light'] {
+  --bg: #fafafa;
+  --surface-1: #ffffff;
+  --surface-2: #f5f5f5;
+  --border: #e4e4e7;
+  --border-strong: #d4d4d8;
+  --text: #18181b;
+  --text-2: #52525b;
+  --text-3: #a1a1aa;
+  --money: #16a34a;
+  --money-strong: #15803d;
+  --warn: #d97706;
+  --accent: #18181b;
+  --accent-strong: #000000;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.06);
+  --grid-dot: rgba(0, 0, 0, 0.06);
+  color-scheme: light;
+}
+
+:root {
+  font-family: 'Geist', Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-feature-settings: 'cv11', 'ss01';
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  overflow-x: hidden;
+  background: var(--bg);
+  color: var(--text);
+  transition: background 200ms ease, color 200ms ease;
+}
+
+button, a, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; background: none; border: none; padding: 0; }
+button:disabled { cursor: not-allowed; opacity: 0.5; }
+img { display: block; max-width: 100%; }
+
+::selection { background: var(--accent); color: var(--bg); }
+
+/* === Utility classes === */
+.mono {
+  font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-feature-settings: 'tnum', 'zero';
+  letter-spacing: -0.02em;
+}
+
+.serif-display {
+  font-family: 'Newsreader', 'Iowan Old Style', 'Charter', Georgia, serif;
+  font-weight: 500;
+  letter-spacing: -0.018em;
+  line-height: 1.04;
+  font-variation-settings: 'opsz' 60;
+}
+
+/* Skip-to-content (Zeldman a11y staple) */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--text);
+  color: var(--bg);
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  z-index: 200;
+  text-decoration: none;
+}
+.skip-link:focus {
+  left: 16px;
+  top: 16px;
+  outline: 3px solid var(--money);
+  outline-offset: 2px;
+}
+
+/* Beautiful focus rings — never use the browser default */
+:focus { outline: none; }
+:focus-visible {
+  outline: 2px solid var(--money);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Visible link underlines — Zeldman classic */
+.editorial-link,
+.prose a,
+.faq-list a,
+.landing-footer a,
+.editorial-footer a {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--text-3);
+  transition: text-decoration-color 180ms ease, color 180ms ease;
+}
+.editorial-link:hover,
+.prose a:hover,
+.faq-list a:hover,
+.landing-footer a:hover,
+.editorial-footer a:hover {
+  text-decoration-color: var(--money);
+  color: var(--text);
+}
+
+/* Drop cap utility */
+.drop-cap::first-letter {
+  font-family: 'Newsreader', Georgia, serif;
+  font-weight: 600;
+  font-variation-settings: 'opsz' 72;
+  font-size: 4.4em;
+  line-height: 0.88;
+  float: left;
+  margin: 0.05em 0.12em -0.05em 0;
+  color: var(--text);
+}
+
+/* Small caps editorial labels */
+.smallcaps {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-3);
+}
+
+/* === Theme toggle === */
+.theme-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 100;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 180ms ease,
+              background 180ms ease;
+}
+.theme-toggle:hover {
+  border-color: var(--border-strong);
+  transform: scale(1.05);
+}
+.theme-toggle:active { transform: scale(0.96); }
+
+/* === Dot grid background utility === */
+.dot-grid {
+  background-image: radial-gradient(circle, var(--grid-dot) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* === Animations === */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 320ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
