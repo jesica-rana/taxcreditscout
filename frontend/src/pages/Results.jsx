@@ -27,6 +27,89 @@ function LogoMark() {
   )
 }
 
+function CreditCard({ s }) {
+  return (
+    <motion.article
+      className="r-credit"
+      variants={{
+        hidden: { opacity: 0, y: 10 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.32, ease: [0.16, 1, 0.3, 1] } },
+      }}
+    >
+      <header className="r-credit-head">
+        <div className="r-credit-titlewrap">
+          <h3 className="r-credit-name">{s.name}</h3>
+          {s.irc_section && (
+            <span className="r-credit-tag">IRC §{s.irc_section}</span>
+          )}
+        </div>
+        <span className="r-credit-amount">
+          ${Number(s.estimated_low).toLocaleString()} – ${Number(s.estimated_high).toLocaleString()}
+        </span>
+      </header>
+
+      {s.how_it_works && (
+        <div className="r-credit-block">
+          <p className="r-credit-label">How this credit works</p>
+          <p className="r-credit-text">{s.how_it_works}</p>
+        </div>
+      )}
+
+      <div className="r-credit-block">
+        <p className="r-credit-label">Why you qualify</p>
+        <p className="r-credit-text">{s.why_you_qualify}</p>
+      </div>
+
+      {s.action_steps?.length > 0 && (
+        <div className="r-credit-block">
+          <p className="r-credit-label">Action steps</p>
+          <ul className="r-credit-steps">
+            {s.action_steps.map((step, i) => <li key={i}>{step}</li>)}
+          </ul>
+        </div>
+      )}
+
+      {s.what_to_verify?.length > 0 && (
+        <div className="r-credit-verify">
+          <p className="r-credit-label r-credit-label-warn">Confirm with your CPA</p>
+          <ul className="r-credit-verify-list">
+            {s.what_to_verify.map((step, i) => <li key={i}>{step}</li>)}
+          </ul>
+        </div>
+      )}
+
+      {s.documentation?.length > 0 && (
+        <details className="r-credit-docs">
+          <summary>Documentation required ({s.documentation.length})</summary>
+          <ul>
+            {s.documentation.map((d, i) => <li key={i}>{d}</li>)}
+          </ul>
+        </details>
+      )}
+
+      <footer className="r-credit-foot">
+        <p className="r-credit-meta">
+          <span>{s.jurisdiction}</span>
+          <span className="dot">·</span>
+          <span>{s.form}</span>
+          <span className="dot">·</span>
+          <span>{s.deadline}</span>
+        </p>
+        {s.source_url && (
+          <a
+            href={s.source_url}
+            target="_blank"
+            rel="noreferrer"
+            className="r-credit-source"
+          >
+            Read source ↗
+          </a>
+        )}
+      </footer>
+    </motion.article>
+  )
+}
+
 function Section({ title, items, tone }) {
   if (!items?.length) return null
   return (
@@ -44,107 +127,7 @@ function Section({ title, items, tone }) {
           visible: { transition: { staggerChildren: 0.05, delayChildren: 0.1 } },
         }}
       >
-        {items.map((s) => (
-          <motion.article
-            key={s.credit_id}
-            className="r-credit"
-            variants={{
-              hidden: { opacity: 0, y: 10 },
-              visible: { opacity: 1, y: 0, transition: { duration: 0.32, ease: [0.16, 1, 0.3, 1] } },
-            }}
-          >
-            <div className="r-credit-head">
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
-                <h3 className="r-credit-name">{s.name}</h3>
-                {s.irc_section && (
-                  <span style={{
-                    fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.06em',
-                    padding: '3px 8px', border: '1px solid var(--line-2)', borderRadius: 4,
-                    color: 'var(--ink-2)', textTransform: 'uppercase',
-                  }}>
-                    IRC §{s.irc_section}
-                  </span>
-                )}
-              </div>
-              <span className="r-credit-amount">
-                ${Number(s.estimated_low).toLocaleString()} – ${Number(s.estimated_high).toLocaleString()}
-              </span>
-            </div>
-
-            {s.how_it_works && (
-              <p style={{
-                margin: '12px 0 0', padding: '10px 14px', borderLeft: '2px solid var(--line-2)',
-                color: 'var(--ink-2)', fontSize: 14, lineHeight: 1.55,
-              }}>
-                <strong style={{ color: 'var(--ink)', fontWeight: 600 }}>How this credit works: </strong>
-                {s.how_it_works}
-              </p>
-            )}
-
-            <p className="r-credit-why" style={{ marginTop: 12 }}>
-              <strong style={{ color: 'var(--ink)', fontWeight: 600 }}>Why you qualify: </strong>
-              {s.why_you_qualify}
-            </p>
-
-            {s.action_steps?.length > 0 && (
-              <ul className="r-credit-steps">
-                {s.action_steps.map((step, i) => <li key={i}>{step}</li>)}
-              </ul>
-            )}
-
-            {s.what_to_verify?.length > 0 && (
-              <div style={{
-                marginTop: 12, padding: '10px 14px', background: 'rgba(255, 200, 100, 0.06)',
-                border: '1px solid rgba(255, 200, 100, 0.2)', borderRadius: 6,
-              }}>
-                <p style={{ margin: 0, fontSize: 12, fontFamily: 'var(--mono)', letterSpacing: '0.04em',
-                  textTransform: 'uppercase', color: 'var(--ink-2)', marginBottom: 6 }}>
-                  Confirm with your CPA
-                </p>
-                <ul style={{ margin: 0, paddingLeft: 20, fontSize: 13, color: 'var(--ink-2)' }}>
-                  {s.what_to_verify.map((step, i) => <li key={i} style={{ marginBottom: 2 }}>{step}</li>)}
-                </ul>
-              </div>
-            )}
-
-            {s.documentation?.length > 0 && (
-              <details style={{ marginTop: 10, fontSize: 13, color: 'var(--ink-2)' }}>
-                <summary style={{ cursor: 'pointer', fontFamily: 'var(--mono)', fontSize: 11,
-                  letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                  Documentation required ({s.documentation.length})
-                </summary>
-                <ul style={{ marginTop: 6, paddingLeft: 20 }}>
-                  {s.documentation.map((d, i) => <li key={i}>{d}</li>)}
-                </ul>
-              </details>
-            )}
-
-            <div style={{
-              marginTop: 14, paddingTop: 12, borderTop: '1px solid var(--line-2)',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              gap: 10, flexWrap: 'wrap',
-            }}>
-              <p className="r-credit-meta" style={{ margin: 0 }}>
-                {s.jurisdiction} · {s.form} · {s.deadline}
-              </p>
-              {s.source_url && (
-                <a
-                  href={s.source_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{
-                    fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.06em',
-                    textTransform: 'uppercase', padding: '6px 12px',
-                    border: '1px solid var(--line-2)', borderRadius: 999,
-                    color: 'var(--ink)', textDecoration: 'none', whiteSpace: 'nowrap',
-                  }}
-                >
-                  Read source ↗
-                </a>
-              )}
-            </div>
-          </motion.article>
-        ))}
+        {items.map((s) => <CreditCard key={s.credit_id} s={s} />)}
       </motion.div>
     </section>
   )
@@ -166,6 +149,7 @@ function Results() {
   const { id } = useParams()
   const [data, setData] = useState(() => (id ? null : getStoredReport()))
   const [loading, setLoading] = useState(Boolean(id))
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     document.documentElement.dataset.theme = 'dark'
@@ -184,6 +168,13 @@ function Results() {
     })
     return () => { cancelled = true }
   }, [id])
+
+  function copyHandoff() {
+    if (!data?.report?.cpa_handoff_summary) return
+    navigator.clipboard?.writeText(data.report.cpa_handoff_summary)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   if (loading) {
     return (
@@ -284,10 +275,10 @@ function Results() {
         </header>
 
         <div className="r-content">
-          <Section title="Critical deadlines" tone="warning" items={report.critical_deadlines} />
-          <Section title="Federal" items={report.federal} />
-          <Section title="State" items={report.state} />
-          <Section title="Local" items={report.local} />
+          <Section title="⚠ Critical deadlines" tone="warning" items={report.critical_deadlines} />
+          <Section title="Federal credits" items={report.federal} />
+          <Section title="State credits" items={report.state} />
+          <Section title="Local credits" items={report.local} />
 
           <section className="r-block">
             <header className="r-block-head">
@@ -305,11 +296,10 @@ function Results() {
               <h2 className="r-block-title">CPA handoff</h2>
               <button
                 type="button"
-                className="r-nav-link"
-                style={{ background: 'transparent', border: '1px solid var(--line-2)', padding: '8px 14px', borderRadius: 999, cursor: 'pointer', fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.06em', textTransform: 'uppercase' }}
-                onClick={() => navigator.clipboard?.writeText(report.cpa_handoff_summary)}
+                className="r-copy-btn"
+                onClick={copyHandoff}
               >
-                Copy text
+                {copied ? '✓ Copied' : 'Copy text'}
               </button>
             </header>
             <p className="r-cpa-card">{report.cpa_handoff_summary}</p>

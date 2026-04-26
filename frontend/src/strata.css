@@ -3420,3 +3420,345 @@
   }
 
   /* === Walkthrough page === */
+
+  /* ================================================================
+     Results page — readability overhaul
+     All text uses --paper / --mute on the dark --ink background.
+     No more dark-on-dark inline-style mistakes.
+     ================================================================ */
+
+  .strata-results { color: var(--paper); }
+
+  .r-credit {
+    background: var(--paper-3);
+    border: 1px solid var(--line-2);
+    border-radius: 14px;
+    padding: 28px 28px 22px;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+  }
+  .r-credit:hover {
+    border-color: color-mix(in srgb, var(--accent) 30%, var(--line-2));
+    transform: translateY(-1px);
+  }
+
+  .r-credit-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+  .r-credit-titlewrap {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+    flex: 1 1 60%;
+    min-width: 0;
+  }
+  .r-credit-name {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    color: var(--paper);
+    margin: 0;
+  }
+  .r-credit-tag {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border: 1px solid var(--line-2);
+    border-radius: 4px;
+    color: var(--mute);
+    white-space: nowrap;
+  }
+  .r-credit-amount {
+    font-family: var(--num);
+    font-variant-numeric: tabular-nums;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--money);
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    line-height: 1.2;
+  }
+
+  /* Body content inside a credit card */
+  .r-credit-block { margin-top: 18px; }
+  .r-credit-label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--mute);
+    margin: 0 0 8px;
+    font-weight: 600;
+  }
+  .r-credit-label-warn { color: var(--warn); }
+  .r-credit-text {
+    margin: 0;
+    color: var(--paper);
+    font-size: 15.5px;
+    line-height: 1.65;
+    max-width: 70ch;
+  }
+
+  /* Action steps — cleaner list */
+  .r-credit-steps {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .r-credit-steps li {
+    position: relative;
+    padding-left: 26px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--paper);
+  }
+  .r-credit-steps li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 9px;
+    width: 14px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  /* "Confirm with your CPA" callout */
+  .r-credit-verify {
+    margin-top: 18px;
+    padding: 16px 18px;
+    background: color-mix(in srgb, var(--warn) 8%, var(--paper-3));
+    border: 1px solid color-mix(in srgb, var(--warn) 30%, var(--line));
+    border-radius: 10px;
+  }
+  .r-credit-verify .r-credit-label { margin-bottom: 10px; }
+  .r-credit-verify-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .r-credit-verify-list li {
+    position: relative;
+    padding-left: 22px;
+    color: var(--paper);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  .r-credit-verify-list li::before {
+    content: '?';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--warn) 20%, transparent);
+    color: var(--warn);
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 3px;
+  }
+
+  /* Documentation collapsible */
+  .r-credit-docs {
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--mute);
+  }
+  .r-credit-docs summary {
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--mute);
+    padding: 4px 0;
+    user-select: none;
+  }
+  .r-credit-docs summary:hover { color: var(--paper); }
+  .r-credit-docs ul {
+    margin-top: 10px;
+    padding-left: 22px;
+    color: var(--paper);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  .r-credit-docs li { margin-bottom: 4px; }
+
+  /* Footer of the credit card */
+  .r-credit-foot {
+    margin-top: 22px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .r-credit-meta {
+    margin: 0;
+    color: var(--mute);
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .r-credit-meta .dot { color: var(--line-2); }
+  .r-credit-source {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    padding: 7px 14px;
+    border: 1px solid var(--line-2);
+    border-radius: 999px;
+    color: var(--paper);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .r-credit-source:hover {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+  }
+
+  /* Bigger gap between credit cards for breathing room */
+  .r-list { display: flex; flex-direction: column; gap: 20px; }
+
+  /* Block titles bigger */
+  .r-block-title {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 32px;
+    letter-spacing: -0.025em;
+    margin: 0;
+    color: var(--paper);
+  }
+  .r-block-warn .r-block-title { color: var(--warn); }
+  .r-block-count {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--mute);
+  }
+
+  /* Action plan columns — cleaner */
+  .r-plan-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  @media (max-width: 768px) {
+    .r-plan-grid { grid-template-columns: 1fr; }
+  }
+  .r-plan-col {
+    background: var(--paper-3);
+    border: 1px solid var(--line-2);
+    border-radius: 12px;
+    padding: 22px;
+  }
+  .r-plan-col h4 {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--mute);
+    margin: 0 0 14px;
+    font-weight: 600;
+  }
+  .r-plan-col ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .r-plan-col li {
+    position: relative;
+    padding-left: 22px;
+    color: var(--paper);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+  .r-plan-col li::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 9px;
+    width: 8px; height: 8px;
+    border-radius: 999px;
+    background: var(--money);
+  }
+
+  /* CPA handoff card */
+  .r-cpa-card {
+    background: var(--paper-3);
+    border: 1px solid var(--line-2);
+    border-radius: 14px;
+    padding: 28px 32px;
+    color: var(--paper);
+    line-height: 1.7;
+    font-size: 15.5px;
+    margin: 0;
+    white-space: pre-line;
+    max-width: 75ch;
+  }
+
+  /* Copy button */
+  .r-copy-btn {
+    background: transparent;
+    border: 1px solid var(--line-2);
+    color: var(--paper);
+    padding: 9px 16px;
+    border-radius: 999px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .r-copy-btn:hover {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+  }
+
+  /* Disclaimer */
+  .r-disclaim {
+    font-size: 12px;
+    color: var(--mute);
+    margin: 16px 0 0;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 600px) {
+    .r-credit { padding: 22px 20px 18px; }
+    .r-credit-name { font-size: 19px; }
+    .r-credit-amount { font-size: 18px; }
+    .r-credit-text { font-size: 15px; }
+    .r-block-title { font-size: 26px; }
+    .r-cpa-card { padding: 22px 20px; font-size: 15px; }
+  }
