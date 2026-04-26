@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0a0a0b" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.svg" />
+    <link rel="mask-icon" href="/favicon.svg" color="#8b7cf7" />
+    <script>
+      // Apply persisted theme before React mounts to avoid flash-of-wrong-theme
+      (function () {
+        try {
+          var t = localStorage.getItem('tcf-theme');
+          if (t !== 'light' && t !== 'dark') {
+            t = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+          }
+          document.documentElement.setAttribute('data-theme', t);
+        } catch (e) {}
+      })();
+    </script>
+    <title>Tax Credit Finder — Find every credit your CPA missed</title>
+    <meta name="description" content="Find every federal, state, and local tax credit your business qualifies for — without uploading your SSN. Privacy-first by topology, not policy." />
+    <meta property="og:title" content="Tax Credit Finder" />
+    <meta property="og:description" content="Find every tax credit your CPA missed. Privacy-first." />
+    <meta property="og:type" content="website" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
