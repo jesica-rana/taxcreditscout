@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef, useCallback } from "react"
+import { useState, useMemo, useEffect } from "react"
 /* Instant Estimator — three controls that produce a live $ readout */
 
 const STATES = ["CA","TX","NY","FL","IL","WA","MA","CO","GA","OR","other"];

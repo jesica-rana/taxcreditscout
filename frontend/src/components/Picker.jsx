@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef, useCallback } from "react"
+import { useState, useMemo } from "react"
 /* Activity Picker — visual chips that light up matching credits */
 
 const ACTIVITIES = [

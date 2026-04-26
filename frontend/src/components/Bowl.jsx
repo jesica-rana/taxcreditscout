@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef } from "react"
 /* CreditBowl — animated bowl filling with credits like a Chipotle bowl */
 
 const INGREDIENTS = [
@@ -25,11 +25,13 @@ const BOWL = {
 
 function CreditBowl() {
   const [items, setItems] = useState([]);  // {id, label, x, y, vy, settled, layer, ...}
+  // eslint-disable-next-line no-unused-vars
   const [showAll, setShowAll] = useState(false);
   const [running, setRunning] = useState(false);  // start paused, observer enables
   const seqRef = useRef(0);
   const rafRef = useRef(0);
   const containerRef = useRef(null);
+  // eslint-disable-next-line no-unused-vars
   const lastDropRef = useRef(0);
 
   // total ticker — animated count-up
@@ -322,6 +324,7 @@ function DollarSteam({ x, delay }) {
   );
 }
 
+// eslint-disable-next-line no-unused-vars
 function SteamWisp({ x, delay }) {
   return (
     <g style={{ transformOrigin: `${x}px ${BOWL.rimY - 10}px` }}>

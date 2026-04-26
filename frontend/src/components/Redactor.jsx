@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useState, useEffect, useMemo, useRef } from "react"
 
 const REDACTOR_LINES = [
   { t: 'Form 1040 — U.S. Individual Income Tax Return', k: 'h' },
@@ -70,6 +70,7 @@ function Redactor() {
     setScanY(0)
   }
 
+  // eslint-disable-next-line no-unused-vars
   function reset() {
     setPhase('idle')
     setScanY(0)

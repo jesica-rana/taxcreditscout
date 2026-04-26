@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef, useCallback } from "react"
+import { useState } from "react"
 /* Credit Atlas — interactive US tile-grid showing credits per state */
 
 // US states laid out on an 11-col × 8-row tilegram (Bostock/NPR-style).

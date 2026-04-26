@@ -1,0 +1,682 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0a0a0b" />
+  <title>CreditBowl — join the waitlist</title>
+  <meta name="description" content="Find every federal tax credit your small business qualifies for — without uploading your SSN. Private beta. 100 spots." />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #08080a;
+      --ink-2: #0d0d10;
+      --paper: #F4F2EC;
+      --paper-3: #161618;
+      --line: rgba(244,242,236,0.06);
+      --line-2: rgba(244,242,236,0.18);
+      --mute: rgba(244,242,236,0.55);
+      --mute-2: rgba(244,242,236,0.36);
+      --accent: oklch(72% 0.16 267);
+      --money: oklch(74% 0.14 155);
+      --serif: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+      --sans: 'Inter', system-ui, sans-serif;
+      --num: 'Geist Mono', ui-monospace, Menlo, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      background: var(--ink);
+      color: var(--paper);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+    a { color: inherit; }
+    em { font-style: normal; }
+    .mono { font-family: var(--num); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+
+    /* Mascot — white outline by inverting the blue source */
+    .mascot {
+      display: block;
+      object-fit: contain;
+      filter: brightness(0) invert(1);
+    }
+
+    /* Top brand bar */
+    header.top {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      padding: 18px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 30;
+      background: linear-gradient(to bottom, rgba(8,8,10,0.85), transparent);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: var(--serif);
+      font-size: 22px;
+      color: var(--paper);
+      text-decoration: none;
+    }
+    .brand .mascot { width: 32px; height: 32px; }
+    .skip {
+      font-family: var(--num);
+      font-size: 11px;
+      color: var(--mute);
+      text-decoration: none;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .skip:hover { color: var(--paper); }
+
+    /* Layout: mascot left (sticky) + content right */
+    .grid {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding-top: 80px;
+    }
+    @media (max-width: 880px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+    aside.left { position: relative; }
+    .stage-left {
+      position: sticky;
+      top: 100px;
+      height: calc(100vh - 120px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0 32px;
+    }
+    @media (max-width: 880px) {
+      .stage-left { position: relative; height: auto; padding: 32px 0; top: auto; }
+    }
+    .stage-left .mascot {
+      width: 240px; height: 240px;
+      animation: bob 2.4s ease-in-out infinite;
+    }
+    @media (max-width: 880px) {
+      .stage-left .mascot { width: 160px; height: 160px; }
+    }
+    .caption {
+      margin-top: 16px;
+      font-size: 12px;
+      color: var(--mute-2);
+      letter-spacing: 0.06em;
+    }
+    @keyframes bob {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-6px); }
+    }
+
+    /* Right column */
+    section.right {
+      padding: 40px 48px 120px;
+      max-width: 720px;
+    }
+    @media (max-width: 880px) {
+      section.right { padding: 32px 24px 80px; }
+    }
+
+    /* Live ticker */
+    .ticker {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 18px 24px;
+      background: var(--paper-3);
+      border: 1px solid var(--line-2);
+      border-radius: 14px;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+    }
+    .ticker > div {
+      display: flex; flex-direction: column; gap: 4px;
+      flex: 1 1 100px; min-width: 0;
+    }
+    .ticker > .div {
+      width: 1px; height: 32px;
+      background: var(--line-2);
+      flex: none;
+    }
+    .ticker .num {
+      font-size: 26px;
+      font-weight: 600;
+      color: var(--paper);
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+    .ticker > div span:not(.num) {
+      font-size: 11px;
+      color: var(--mute);
+      text-transform: uppercase;
+      letter-spacing: 0.10em;
+    }
+    @media (max-width: 600px) {
+      .ticker { padding: 14px 18px; gap: 14px; }
+      .ticker > .div { display: none; }
+      .ticker > div:not(.div) { flex-basis: 45%; }
+      .ticker .num { font-size: 22px; }
+    }
+
+    /* Intro */
+    .kicker {
+      display: inline-block;
+      font-size: 11px;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      border: 1px solid var(--line-2);
+      padding: 5px 12px;
+      border-radius: 999px;
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-family: var(--serif);
+      font-weight: 400;
+      font-size: clamp(48px, 6vw, 80px);
+      line-height: 0.98;
+      letter-spacing: -0.035em;
+      margin: 0 0 18px;
+    }
+    h1 em { color: var(--accent); font-family: var(--num); font-weight: 500; letter-spacing: -0.04em; }
+    .sub {
+      font-size: 17px;
+      color: var(--mute);
+      line-height: 1.55;
+      margin: 0 0 28px;
+      max-width: 480px;
+    }
+
+    /* Form */
+    form.waitlist {
+      display: flex;
+      gap: 8px;
+      max-width: 460px;
+      margin-bottom: 14px;
+      background: var(--ink-2);
+      border: 1px solid var(--line-2);
+      border-radius: 999px;
+      padding: 4px 4px 4px 20px;
+      transition: border-color 180ms ease;
+    }
+    form.waitlist:focus-within { border-color: var(--accent); }
+    form.waitlist input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--paper);
+      font-family: var(--sans);
+      font-size: 15px;
+      outline: none;
+      padding: 12px 0;
+      min-width: 0;
+    }
+    form.waitlist input::placeholder { color: var(--mute-2); }
+    form.waitlist button {
+      background: var(--accent);
+      color: var(--ink);
+      border: none;
+      border-radius: 999px;
+      padding: 11px 22px;
+      font-family: var(--sans);
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: filter 180ms ease, transform 120ms ease;
+    }
+    form.waitlist button:hover { filter: brightness(0.95); }
+    form.waitlist button:active { transform: scale(0.98); }
+    .fineprint {
+      font-size: 11px;
+      color: var(--mute-2);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* Position card (after submit) */
+    .position {
+      max-width: 460px;
+      background: var(--paper-3);
+      border: 1px solid color-mix(in srgb, var(--money) 35%, var(--line-2));
+      border-radius: 16px;
+      padding: 24px 26px;
+      margin-bottom: 14px;
+    }
+    .position-row {
+      display: flex; align-items: baseline; gap: 12px;
+      margin-bottom: 14px;
+    }
+    .position-eyebrow {
+      font-size: 11px;
+      color: var(--money);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+    }
+    .position-num {
+      font-size: 36px;
+      font-weight: 600;
+      color: var(--paper);
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+    .position-of {
+      font-size: 14px;
+      color: var(--mute);
+    }
+    .position-bar {
+      width: 100%;
+      height: 4px;
+      background: var(--ink);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+    .position-bar > span {
+      display: block;
+      height: 100%;
+      background: var(--money);
+      border-radius: 999px;
+      transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .position-info {
+      font-size: 13px;
+      color: var(--mute);
+      margin: 0 0 18px;
+    }
+    .position-info b { color: var(--paper); }
+    .share {
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+    }
+    .share p {
+      margin: 0 0 10px;
+      font-size: 11px;
+      color: var(--mute);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+    .share button {
+      width: 100%;
+      background: var(--accent);
+      color: var(--ink);
+      border: none;
+      border-radius: 999px;
+      padding: 12px 18px;
+      font-family: var(--sans);
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    /* Trust row */
+    .trust {
+      display: flex;
+      gap: 24px;
+      padding: 24px 0;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      margin: 40px 0;
+    }
+    .trust > div {
+      flex: 1;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .trust > div span {
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+    .trust > div p {
+      font-family: var(--num);
+      font-size: 10px;
+      color: var(--mute);
+      text-transform: uppercase;
+      letter-spacing: 0.10em;
+    }
+
+    /* Feature blocks */
+    .feat {
+      padding: 56px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .feat:last-of-type { border-bottom: none; }
+    .feat-num {
+      font-family: var(--num);
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      color: var(--accent);
+      font-weight: 600;
+      display: block;
+      margin-bottom: 18px;
+    }
+    .feat h2 {
+      font-family: var(--serif);
+      font-weight: 400;
+      font-size: clamp(28px, 3.6vw, 40px);
+      line-height: 1.05;
+      letter-spacing: -0.025em;
+      margin: 0 0 14px;
+    }
+    .feat h2 em { color: var(--accent); font-family: var(--num); }
+    .feat p {
+      color: var(--mute);
+      font-size: 16px;
+      line-height: 1.55;
+      max-width: 520px;
+      margin: 0 0 24px;
+    }
+    .feat-card {
+      background: var(--paper-3);
+      border: 1px solid var(--line-2);
+      border-radius: 14px;
+      padding: 22px;
+      max-width: 440px;
+    }
+    .feat-card .bar {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--num);
+      font-size: 11px;
+      color: var(--money);
+      text-transform: uppercase;
+      letter-spacing: 0.10em;
+      padding: 5px 11px;
+      background: rgba(15,123,63,0.12);
+      border-radius: 999px;
+      margin-bottom: 16px;
+    }
+    .feat-card .dot {
+      width: 6px; height: 6px;
+      border-radius: 999px;
+      background: var(--money);
+      box-shadow: 0 0 0 3px rgba(15,123,63,0.18);
+    }
+    .feat-rows {
+      display: flex; flex-direction: column; gap: 8px;
+      font-family: var(--num); font-size: 12px;
+    }
+    .feat-rows > div {
+      display: flex; justify-content: space-between;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .feat-rows > div:last-child { border-bottom: none; }
+    .feat-rows > div span:first-child {
+      color: var(--mute);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .redact {
+      background: var(--paper); color: var(--ink);
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .keep { color: var(--money); font-weight: 600; }
+
+    /* Final reprise */
+    .final {
+      padding: 56px 0 0;
+      border-top: 1px solid var(--line);
+      margin-top: 40px;
+    }
+
+    /* Footer */
+    footer.bottom {
+      margin-top: 64px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--num);
+      font-size: 11px;
+      color: var(--mute);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    footer.bottom a {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+    }
+    footer.bottom a:hover { border-bottom-color: var(--accent); }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      .stage-left .mascot { animation: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="top">
+  <a href="/" class="brand">
+    <img class="mascot" src="assets/creditbowl-logo.svg" alt="" width="32" height="32" />
+    <span>CreditBowl</span>
+  </a>
+  <a href="/" class="skip">Skip →</a>
+</header>
+
+<div class="grid">
+  <!-- LEFT — sticky mascot -->
+  <aside class="left">
+    <div class="stage-left">
+      <img class="mascot" src="assets/creditbowl-logo.svg" alt="CreditBowl mascot" />
+      <p class="caption mono">Hi. I'm CreditBowl.</p>
+    </div>
+  </aside>
+
+  <!-- RIGHT — content -->
+  <section class="right">
+
+    <!-- Live ticker -->
+    <div class="ticker">
+      <div>
+        <span class="num mono" data-count="14200" data-prefix="$">$0</span>
+        <span>typical credit stack</span>
+      </div>
+      <div class="div"></div>
+      <div>
+        <span class="num mono" data-count="47">0</span>
+        <span>federal credits checked</span>
+      </div>
+      <div class="div"></div>
+      <div>
+        <span class="num mono" data-count="28">0</span>
+        <span>on the waitlist</span>
+      </div>
+    </div>
+
+    <!-- Headline + form -->
+    <p class="kicker mono">Private beta · 100 spots</p>
+    <h1>Your CPA checks <em>6</em>.<br/>CreditBowl checks <em>47</em>.</h1>
+    <p class="sub">
+      The 47 federal small-business tax credits — checked against your actual
+      return in 30 seconds. State and city credits rolling out this summer.
+      Without ever seeing your SSN.
+    </p>
+
+    <div id="formMount">
+      <form class="waitlist" id="waitlistForm">
+        <input type="email" required placeholder="you@yourbusiness.com" id="emailInput" aria-label="Email address" />
+        <button type="submit">Save my slot →</button>
+      </form>
+      <p class="fineprint mono">No spam · we email once · scroll to see what I do ↓</p>
+    </div>
+
+    <!-- Trust micro-row -->
+    <div class="trust">
+      <div><span class="mono">$10</span><p>per audit</p></div>
+      <div><span class="mono">47</span><p>federal credits</p></div>
+      <div><span class="mono">0 KB</span><p>SSN data stored</p></div>
+    </div>
+
+    <!-- Feature 01 -->
+    <article class="feat">
+      <span class="feat-num mono">01</span>
+      <h2>I read your tax return.</h2>
+      <p>Drop your PDF. I parse it locally — names, SSN, EIN, addresses redacted in your browser before anything leaves your device.</p>
+      <div class="feat-card">
+        <div class="bar"><span class="dot"></span> 1040.pdf · local-only</div>
+        <div class="feat-rows">
+          <div><span>Name</span><span class="redact">[ PERSON ]</span></div>
+          <div><span>SSN</span><span class="redact">[ SSN ]</span></div>
+          <div><span>EIN</span><span class="redact">[ EIN ]</span></div>
+          <div><span>R&amp;D wages</span><span class="keep">$184,200</span></div>
+          <div><span>Equipment</span><span class="keep">$42,800</span></div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Feature 02 -->
+    <article class="feat">
+      <span class="feat-num mono">02</span>
+      <h2>I check the credits worth checking.</h2>
+      <p>R&amp;D, WOTC, Section 179, energy ITC, paid family leave, retirement startup, the major state R&amp;D bonuses. The ~47 federal credits small businesses actually qualify for — scanned in 30 seconds.</p>
+    </article>
+
+    <!-- Feature 03 -->
+    <article class="feat">
+      <span class="feat-num mono">03</span>
+      <h2>You take it to your CPA.</h2>
+      <p>Get a 12-page report with form numbers and a one-page handoff sheet. Your CPA files. I just find what they missed.</p>
+    </article>
+
+    <!-- Reprise -->
+    <article class="feat final">
+      <h2>Still here? <em>Save your slot.</em></h2>
+      <div id="formMountReprise">
+        <form class="waitlist" id="waitlistForm2">
+          <input type="email" required placeholder="you@yourbusiness.com" aria-label="Email address" />
+          <button type="submit">Join waitlist →</button>
+        </form>
+      </div>
+    </article>
+
+    <footer class="bottom">
+      <span>Built after my CPA missed $14K · open source</span>
+      <a href="https://github.com/jesica-rana/taxcreditscout" target="_blank" rel="noreferrer">github.com/creditbowl</a>
+    </footer>
+
+  </section>
+</div>
+
+<script>
+  // === Animated count-up for the ticker ===
+  document.querySelectorAll('[data-count]').forEach((el) => {
+    const target = Number(el.getAttribute('data-count')) || 0;
+    const prefix = el.getAttribute('data-prefix') || '';
+    const start = performance.now();
+    const dur = 1400;
+    function step(now) {
+      const t = Math.min((now - start) / dur, 1);
+      const eased = 1 - Math.pow(1 - t, 3);
+      const v = Math.round(target * eased);
+      el.textContent = prefix + v.toLocaleString();
+      if (t < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  });
+
+  // === Backend: Supabase ===
+  // Setup is in this folder's README.md. After running supabase-schema.sql:
+  //   - Project Settings → API → copy "Project URL" and "anon public" key
+  //   - Paste both below
+  // The anon key is safe to expose — RLS only allows INSERT, not SELECT.
+  const SUPABASE_URL  = 'https://YOUR-PROJECT-ID.supabase.co';
+  const SUPABASE_ANON = 'PASTE_YOUR_ANON_PUBLIC_KEY_HERE';
+
+  function handleSubmit(form, mountEl) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const input = form.querySelector('input[type=email]');
+      const email = input.value.trim();
+      if (!email || !email.includes('@')) return;
+
+      // Local cache as fallback so the UI never breaks
+      let pos = 28;
+      try {
+        const list = JSON.parse(localStorage.getItem('cb-waitlist') || '[]');
+        list.push({ email: email, at: new Date().toISOString() });
+        localStorage.setItem('cb-waitlist', JSON.stringify(list));
+        pos = 28 + list.length;
+      } catch (err) {}
+
+      // Send to Supabase. RLS allows INSERT only; reads are blocked.
+      // The anon key in the bundle is safe — it can't read the list.
+      if (SUPABASE_URL.startsWith('https://') && !SUPABASE_URL.includes('YOUR-PROJECT')) {
+        try {
+          const res = await fetch(SUPABASE_URL + '/rest/v1/waitlist', {
+            method: 'POST',
+            headers: {
+              apikey: SUPABASE_ANON,
+              Authorization: 'Bearer ' + SUPABASE_ANON,
+              'Content-Type': 'application/json',
+              Prefer: 'return=minimal',
+            },
+            body: JSON.stringify({ email: email, source: 'waitlist' }),
+          });
+          // 201 = inserted, 409 = already on the list (still success for UX)
+          if (!res.ok && res.status !== 409) {
+            const text = await res.text();
+            console.warn('Waitlist insert failed', res.status, text);
+          }
+        } catch (err) {
+          // network failure — local position still works
+        }
+      }
+
+      const refUrl = 'https://creditbowl.com/waitlist?ref=' + encodeURIComponent(email);
+      mountEl.innerHTML = [
+        '<div class="position">',
+          '<div class="position-row">',
+            '<span class="position-eyebrow mono">You\'re in line</span>',
+            '<span class="position-num mono">#' + pos + '</span>',
+            '<span class="position-of mono">of 100</span>',
+          '</div>',
+          '<div class="position-bar"><span style="width:' + Math.min(100, (pos/100)*100) + '%"></span></div>',
+          '<p class="position-info">We\'ll email <b class="mono">' + email + '</b> the moment your slot opens.</p>',
+          '<div class="share">',
+            '<p>Want to skip the line?</p>',
+            '<button type="button" id="shareBtn">Copy referral link · skip 50 spots per signup</button>',
+          '</div>',
+        '</div>'
+      ].join('');
+
+      const shareBtn = mountEl.querySelector('#shareBtn');
+      if (shareBtn) {
+        shareBtn.addEventListener('click', () => {
+          if (navigator.clipboard) navigator.clipboard.writeText(refUrl);
+          shareBtn.textContent = '✓ Copied — share with a friend';
+        });
+      }
+    });
+  }
+  handleSubmit(document.getElementById('waitlistForm'), document.getElementById('formMount'));
+  handleSubmit(document.getElementById('waitlistForm2'), document.getElementById('formMountReprise'));
+</script>
+
+</body>
+</html>
