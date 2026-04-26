@@ -12,34 +12,24 @@ import * as dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
 dotenv.config();
 
-import { embedBatch, jsonCompletion } from "../lib/openai";
+import { z } from "zod";
+import { embedBatch, jsonCompletion, EMBED_DIM } from "../lib/openai";
 import { ensureCollection, upsertCreditsBatch } from "../lib/qdrant";
 import { buildEmbeddingText } from "../lib/embedding-text";
 import type { Credit } from "../lib/types";
 import { createHash } from "node:crypto";
 
-const SCENARIO_SCHEMA = {
-  type: "object",
-  additionalProperties: false,
-  properties: {
-    scenarios: {
-      type: "array",
-      items: { type: "string" },
-      minItems: 3,
-      maxItems: 3,
-    },
-  },
-  required: ["scenarios"],
-} as const;
+const ScenariosSchema = z.object({
+  scenarios: z.array(z.string()).length(3),
+});
 
 async function generateScenarios(credit: Credit): Promise<string[]> {
   try {
-    const result = await jsonCompletion<{ scenarios: string[] }>({
+    const result = await jsonCompletion({
       system: `Given a tax credit, write exactly 3 short plain-language scenarios (1 sentence each) describing concrete situations where a small business would qualify. The goal is to help semantic search match user descriptions of activities to this credit. Use everyday language, not legal jargon.`,
       user: `Credit: ${credit.name}\nEligibility: ${credit.eligibility_text}\n\nWrite 3 scenarios.`,
-      schema: SCENARIO_SCHEMA,
+      schema: ScenariosSchema,
       schemaName: "scenarios",
-      temperature: 0.7,
     });
     return result.scenarios;
   } catch {
@@ -63,7 +53,7 @@ async function main() {
   const credits = JSON.parse(raw) as Credit[];
   console.log(`Loaded ${credits.length} credits from ${file}`);
 
-  await ensureCollection(1536);
+  await ensureCollection(EMBED_DIM);
 
   // Generate scenarios in parallel batches
   console.log("Generating scenarios...");
@@ -72,20 +62,27 @@ async function main() {
     const batch = credits.slice(i, i + 8);
     const results = await Promise.all(batch.map((c) => generateScenarios(c)));
     batch.forEach((c, idx) => scenariosByCredit.set(c.id, results[idx]));
-    console.log(`  scenarios: ${Math.min(i + 8, credits.length)}/${credits.length}`);
+    console.log(
+      `  scenarios: ${Math.min(i + 8, credits.length)}/${credits.length}`
+    );
   }
 
-  // Embed in batches of 32
+  // Embed in batches of 32 with inputType="document" for index-side weighting
   console.log("Embedding...");
-  const points: { id: string | number; vector: number[]; payload: Credit }[] = [];
+  const points: { id: string | number; vector: number[]; payload: Credit }[] =
+    [];
   for (let i = 0; i < credits.length; i += 32) {
     const batch = credits.slice(i, i + 32);
-    const texts = batch.map((c) => buildEmbeddingText(c, scenariosByCredit.get(c.id) || []));
-    const vectors = await embedBatch(texts);
+    const texts = batch.map((c) =>
+      buildEmbeddingText(c, scenariosByCredit.get(c.id) || [])
+    );
+    const vectors = await embedBatch(texts, "document");
     batch.forEach((c, idx) =>
       points.push({ id: uuidFromId(c.id), vector: vectors[idx], payload: c })
     );
-    console.log(`  embedded: ${Math.min(i + 32, credits.length)}/${credits.length}`);
+    console.log(
+      `  embedded: ${Math.min(i + 32, credits.length)}/${credits.length}`
+    );
   }
 
   // Upsert in batches of 64

@@ -1,14 +1,15 @@
 /**
- * Stage 1a (PDF path): Vision API extracts a structured RawIntake from the
+ * Stage 1a (PDF path): Vision extraction of a structured RawIntake from the
  * redacted page images and redacted text.
  *
- * The Vision call uses GPT-4o (multimodal) so it can read tax-form structure
+ * The vision call uses Claude (multimodal) so it can read tax-form structure
  * (line numbers, boxes, totals) even on scanned PDFs that have no text layer.
  * It cannot read PII because PII has been replaced with `[REDACTED:TYPE]`
  * markers in the text and (in v2) blacked out in the image.
  */
 
-import { openai, LLM_MODEL } from "../openai";
+import { z } from "zod";
+import { jsonCompletion, type UserContentBlock } from "../openai";
 import type { RawIntake } from "../types";
 
 const SYSTEM = `You are a tax-document analysis assistant. You will be given (1) one or more page images from a redacted tax document where personally identifiable information has been removed, and (2) the redacted text content of those pages. Your job is to extract a structured business profile that downstream tax-credit search will consume.
@@ -23,61 +24,64 @@ Inferences:
 - revenue_band: from gross receipts. Pick the closest band.
 - activities: pick from the allowed checklist based on the line items you see.
 - free_text: a short paragraph noting anything credit-relevant (e.g., "large equipment purchases on line 13", "employer-paid health insurance line 14", "R&D expenditures noted").
-- email: ALWAYS null (PII).
 
 If the document is illegible or clearly not a tax document, return your best guess and set free_text to "Document unclear; user should consider the form-based path."`;
 
-const SCHEMA = {
-  type: "object",
-  additionalProperties: false,
-  properties: {
-    business_description: { type: "string" },
-    state: { type: "string", minLength: 2, maxLength: 2 },
-    city: { type: ["string", "null"] },
-    employee_count: { type: "integer", minimum: 0, maximum: 100000 },
-    revenue_band: {
-      type: "string",
-      enum: ["under_500k", "500k_2m", "2m_10m", "10m_50m", "over_50m"],
-    },
-    activities: {
-      type: "array",
-      items: {
-        type: "string",
-        enum: [
-          "hired_recently",
-          "bought_equipment",
-          "built_software",
-          "renewable_energy",
-          "employee_health",
-          "paid_leave",
-          "hired_disadvantaged",
-          "in_oz",
-          "started_retirement",
-        ],
-      },
-    },
-    free_text: { type: ["string", "null"] },
-  },
-  required: [
-    "business_description",
-    "state",
-    "city",
-    "employee_count",
-    "revenue_band",
-    "activities",
-    "free_text",
-  ],
-} as const;
+const DocumentExtractSchema = z.object({
+  business_description: z.string(),
+  state: z.string().length(2),
+  city: z.string().nullable(),
+  employee_count: z.number().int().min(0).max(100000),
+  revenue_band: z.enum([
+    "under_500k",
+    "500k_2m",
+    "2m_10m",
+    "10m_50m",
+    "over_50m",
+  ]),
+  activities: z.array(
+    z.enum([
+      "hired_recently",
+      "bought_equipment",
+      "built_software",
+      "renewable_energy",
+      "employee_health",
+      "paid_leave",
+      "hired_disadvantaged",
+      "in_oz",
+      "started_retirement",
+    ])
+  ),
+  free_text: z.string().nullable(),
+});
 
 export interface DocumentExtractInput {
   pages: { redactedText: string; redactedImageDataUrl: string }[];
-  userHint?: { state?: string; city?: string };
+  userHint?: { state?: string; city?: string | null };
+}
+
+/**
+ * Convert a `data:image/png;base64,XXX` URL into an Anthropic image content block.
+ */
+function dataUrlToImageBlock(dataUrl: string): UserContentBlock {
+  const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+  if (!match) {
+    throw new Error(`Invalid data URL (expected base64-encoded image)`);
+  }
+  return {
+    type: "image",
+    source: {
+      type: "base64",
+      media_type: match[1],
+      data: match[2],
+    },
+  };
 }
 
 export async function extractFromDocument(
   input: DocumentExtractInput
 ): Promise<RawIntake> {
-  const userContent: any[] = [
+  const blocks: UserContentBlock[] = [
     {
       type: "text",
       text: `Redacted document contents follow. ${
@@ -89,38 +93,24 @@ export async function extractFromDocument(
   ];
 
   for (const page of input.pages) {
-    userContent.push({ type: "image_url", image_url: { url: page.redactedImageDataUrl } });
-    userContent.push({
+    blocks.push(dataUrlToImageBlock(page.redactedImageDataUrl));
+    blocks.push({
       type: "text",
       text: `Redacted text from this page:\n${page.redactedText.slice(0, 8000)}`,
     });
   }
 
-  userContent.push({
+  blocks.push({
     type: "text",
-    text: `Now extract the structured business profile. Output JSON matching the schema.`,
+    text: `Now extract the structured business profile.`,
   });
 
-  const res = await openai.chat.completions.create({
-    model: LLM_MODEL,
-    temperature: 0.2,
-    messages: [
-      { role: "system", content: SYSTEM },
-      { role: "user", content: userContent },
-    ],
-    response_format: {
-      type: "json_schema",
-      json_schema: {
-        name: "document_extract",
-        schema: SCHEMA,
-        strict: true,
-      },
-    },
+  const parsed = await jsonCompletion({
+    system: SYSTEM,
+    user: blocks,
+    schema: DocumentExtractSchema,
+    schemaName: "document_extract",
   });
-
-  const content = res.choices[0]?.message?.content;
-  if (!content) throw new Error("Vision returned empty content");
-  const parsed = JSON.parse(content) as Omit<RawIntake, "email">;
 
   // PII-safe: email is always null on the PDF path
   return {

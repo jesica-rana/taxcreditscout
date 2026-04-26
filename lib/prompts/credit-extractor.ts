@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { jsonCompletion } from "../openai";
 import type { Credit } from "../types";
 
@@ -26,75 +27,43 @@ Field guidelines:
 
 If the page describes something that's NOT a tax credit (e.g., a deduction, a loan, an SBA program), skip it — return zero credits in that case.`;
 
-const SCHEMA = {
-  type: "object",
-  additionalProperties: false,
-  properties: {
-    credits: {
-      type: "array",
-      items: {
-        type: "object",
-        additionalProperties: false,
-        properties: {
-          name: { type: "string" },
-          jurisdiction: {
-            type: "string",
-            enum: ["Federal", "State", "City", "Private"],
-          },
-          state: { type: ["string", "null"] },
-          city: { type: ["string", "null"] },
-          credit_amount_min: { type: "number" },
-          credit_amount_max: { type: "number" },
-          credit_type: {
-            type: "string",
-            enum: ["per_employee", "percent_of_expense", "flat", "percent_of_revenue"],
-          },
-          industries: { type: "array", items: { type: "string" } },
-          company_size_min_employees: { type: "integer" },
-          company_size_max_employees: { type: ["integer", "null"] },
-          revenue_min: { type: ["number", "null"] },
-          revenue_max: { type: ["number", "null"] },
-          form: { type: "string" },
-          filing_deadline: { type: "string" },
-          deadline_critical: { type: "boolean" },
-          deadline_date: { type: ["string", "null"] },
-          eligibility_text: { type: "string" },
-          documentation_required: { type: "array", items: { type: "string" } },
-          estimated_avg_finding: { type: "number" },
-        },
-        required: [
-          "name",
-          "jurisdiction",
-          "state",
-          "city",
-          "credit_amount_min",
-          "credit_amount_max",
-          "credit_type",
-          "industries",
-          "company_size_min_employees",
-          "company_size_max_employees",
-          "revenue_min",
-          "revenue_max",
-          "form",
-          "filing_deadline",
-          "deadline_critical",
-          "deadline_date",
-          "eligibility_text",
-          "documentation_required",
-          "estimated_avg_finding",
-        ],
-      },
-    },
-  },
-  required: ["credits"],
-} as const;
+const CreditItemSchema = z.object({
+  name: z.string(),
+  jurisdiction: z.enum(["Federal", "State", "City", "Private"]),
+  state: z.string().nullable(),
+  city: z.string().nullable(),
+  credit_amount_min: z.number(),
+  credit_amount_max: z.number(),
+  credit_type: z.enum([
+    "per_employee",
+    "percent_of_expense",
+    "flat",
+    "percent_of_revenue",
+  ]),
+  industries: z.array(z.string()),
+  company_size_min_employees: z.number().int(),
+  company_size_max_employees: z.number().int().nullable(),
+  revenue_min: z.number().nullable(),
+  revenue_max: z.number().nullable(),
+  form: z.string(),
+  filing_deadline: z.string(),
+  deadline_critical: z.boolean(),
+  deadline_date: z.string().nullable(),
+  eligibility_text: z.string(),
+  documentation_required: z.array(z.string()),
+  estimated_avg_finding: z.number(),
+});
+
+const ExtractionSchema = z.object({
+  credits: z.array(CreditItemSchema),
+});
 
 export async function extractCredits(args: {
   sourceUrl: string;
   sourceText: string;
   hint?: string;
 }): Promise<Credit[]> {
-  const result = await jsonCompletion<{ credits: Omit<Credit, "id" | "url">[] }>({
+  const result = await jsonCompletion({
     system: SYSTEM,
     user: `Source URL: ${args.sourceUrl}
 ${args.hint ? `Hint: ${args.hint}\n` : ""}
@@ -104,14 +73,16 @@ ${args.sourceText.slice(0, 30000)}
 """
 
 Extract every distinct tax credit from this page.`,
-    schema: SCHEMA,
+    schema: ExtractionSchema,
     schemaName: "credit_extraction",
-    temperature: 0.2,
   });
 
-  return result.credits.map((c, i) => ({
+  return result.credits.map((c) => ({
     ...c,
-    id: slugify(c.name) + (c.state ? `_${c.state.toLowerCase()}` : "") + (c.city ? `_${slugify(c.city)}` : ""),
+    id:
+      slugify(c.name) +
+      (c.state ? `_${c.state.toLowerCase()}` : "") +
+      (c.city ? `_${slugify(c.city)}` : ""),
     url: args.sourceUrl,
   }));
 }

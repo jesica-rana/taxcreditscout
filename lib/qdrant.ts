@@ -1,4 +1,5 @@
 import { QdrantClient } from "@qdrant/js-client-rest";
+import { EMBED_DIM } from "./openai";
 import type { Credit, UserProfile } from "./types";
 
 export const COLLECTION = process.env.QDRANT_COLLECTION || "tax_credits";
@@ -8,7 +9,7 @@ export const qdrant = new QdrantClient({
   apiKey: process.env.QDRANT_API_KEY,
 });
 
-export async function ensureCollection(vectorSize = 1536) {
+export async function ensureCollection(vectorSize: number = EMBED_DIM) {
   const exists = await qdrant
     .getCollection(COLLECTION)
     .then(() => true)
@@ -41,7 +42,13 @@ export async function upsertCredit(point: {
   payload: Credit;
 }) {
   await qdrant.upsert(COLLECTION, {
-    points: [{ id: point.id, vector: point.vector, payload: point.payload as Record<string, unknown> }],
+    points: [
+      {
+        id: point.id,
+        vector: point.vector,
+        payload: point.payload as unknown as Record<string, unknown>,
+      },
+    ],
   });
 }
 
@@ -53,7 +60,7 @@ export async function upsertCreditsBatch(
     points: points.map((p) => ({
       id: p.id,
       vector: p.vector,
-      payload: p.payload as Record<string, unknown>,
+      payload: p.payload as unknown as Record<string, unknown>,
     })),
   });
 }

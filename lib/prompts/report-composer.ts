@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { jsonCompletion } from "../openai";
 import type { Report, ReportSection, UserProfile, VerifiedCredit } from "../types";
 
@@ -13,58 +14,20 @@ Output the structured report. Required pieces:
 
 Always include the legal disclaimer at the end (we'll provide it).`;
 
-const SCHEMA = {
-  type: "object",
-  additionalProperties: false,
-  properties: {
-    business_summary: { type: "string" },
-    sections: {
-      type: "array",
-      items: {
-        type: "object",
-        additionalProperties: false,
-        properties: {
-          credit_id: { type: "string" },
-          why_you_qualify: { type: "string" },
-          action_steps: {
-            type: "array",
-            items: { type: "string" },
-            minItems: 2,
-            maxItems: 4,
-          },
-        },
-        required: ["credit_id", "why_you_qualify", "action_steps"],
-      },
-    },
-    action_plan_this_week: {
-      type: "array",
-      items: { type: "string" },
-      minItems: 2,
-      maxItems: 4,
-    },
-    action_plan_this_month: {
-      type: "array",
-      items: { type: "string" },
-      minItems: 2,
-      maxItems: 4,
-    },
-    action_plan_this_quarter: {
-      type: "array",
-      items: { type: "string" },
-      minItems: 2,
-      maxItems: 4,
-    },
-    cpa_handoff_summary: { type: "string" },
-  },
-  required: [
-    "business_summary",
-    "sections",
-    "action_plan_this_week",
-    "action_plan_this_month",
-    "action_plan_this_quarter",
-    "cpa_handoff_summary",
-  ],
-} as const;
+const ReportSchema = z.object({
+  business_summary: z.string(),
+  sections: z.array(
+    z.object({
+      credit_id: z.string(),
+      why_you_qualify: z.string(),
+      action_steps: z.array(z.string()).min(2).max(4),
+    })
+  ),
+  action_plan_this_week: z.array(z.string()).min(2).max(4),
+  action_plan_this_month: z.array(z.string()).min(2).max(4),
+  action_plan_this_quarter: z.array(z.string()).min(2).max(4),
+  cpa_handoff_summary: z.string(),
+});
 
 const DISCLAIMER =
   "This report is informational research and not tax advice. All findings should be verified with a qualified CPA or tax attorney before filing. TaxCreditScout never interacts with the IRS on your behalf.";
@@ -96,19 +59,11 @@ ${verified
 
 Compose the report.`;
 
-  const llm = await jsonCompletion<{
-    business_summary: string;
-    sections: { credit_id: string; why_you_qualify: string; action_steps: string[] }[];
-    action_plan_this_week: string[];
-    action_plan_this_month: string[];
-    action_plan_this_quarter: string[];
-    cpa_handoff_summary: string;
-  }>({
+  const llm = await jsonCompletion({
     system: SYSTEM,
     user: userMessage,
-    schema: SCHEMA,
+    schema: ReportSchema,
     schemaName: "report",
-    temperature: 0.4,
   });
 
   // Materialize ReportSections by joining LLM output with the credit metadata
@@ -122,7 +77,10 @@ Compose the report.`;
       estimated_low: v.estimated_credit_low,
       estimated_high: v.estimated_credit_high,
       why_you_qualify: llmPart?.why_you_qualify || v.reasoning,
-      action_steps: llmPart?.action_steps || ["Review eligibility with your CPA", "Gather supporting documentation"],
+      action_steps: llmPart?.action_steps || [
+        "Review eligibility with your CPA",
+        "Gather supporting documentation",
+      ],
       form: v.credit.form,
       deadline: v.credit.filing_deadline,
       deadline_critical: v.credit.deadline_critical,
@@ -144,7 +102,9 @@ Compose the report.`;
     critical_deadlines: sections.filter((s) => s.deadline_critical),
     federal: sections.filter((s) => s.jurisdiction === "Federal"),
     state: sections.filter((s) => s.jurisdiction === "State"),
-    local: sections.filter((s) => s.jurisdiction === "City" || s.jurisdiction === "Private"),
+    local: sections.filter(
+      (s) => s.jurisdiction === "City" || s.jurisdiction === "Private"
+    ),
     action_plan_this_week: llm.action_plan_this_week,
     action_plan_this_month: llm.action_plan_this_month,
     action_plan_this_quarter: llm.action_plan_this_quarter,

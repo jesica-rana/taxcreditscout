@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { jsonCompletion } from "../openai";
 import type { Credit, UserProfile, VerifiedCredit } from "../types";
 
@@ -14,30 +15,14 @@ Output:
 
 If the credit has a hard size or industry restriction the business doesn't meet, return qualifies: "no" with low confidence.`;
 
-const SCHEMA = {
-  type: "object",
-  additionalProperties: false,
-  properties: {
-    qualifies: { type: "string", enum: ["yes", "likely", "no"] },
-    confidence: { type: "number", minimum: 0, maximum: 1 },
-    estimated_credit_low: { type: "number", minimum: 0 },
-    estimated_credit_high: { type: "number", minimum: 0 },
-    reasoning: { type: "string" },
-    what_to_verify: {
-      type: "array",
-      items: { type: "string" },
-      maxItems: 3,
-    },
-  },
-  required: [
-    "qualifies",
-    "confidence",
-    "estimated_credit_low",
-    "estimated_credit_high",
-    "reasoning",
-    "what_to_verify",
-  ],
-} as const;
+const EligibilitySchema = z.object({
+  qualifies: z.enum(["yes", "likely", "no"]),
+  confidence: z.number().min(0).max(1),
+  estimated_credit_low: z.number().min(0),
+  estimated_credit_high: z.number().min(0),
+  reasoning: z.string(),
+  what_to_verify: z.array(z.string()).max(3),
+});
 
 function profileBlurb(p: UserProfile): string {
   return `Business: ${p.business_description}
@@ -65,19 +50,11 @@ export async function verifyOne(
   profile: UserProfile,
   credit: Credit
 ): Promise<VerifiedCredit> {
-  const result = await jsonCompletion<{
-    qualifies: "yes" | "likely" | "no";
-    confidence: number;
-    estimated_credit_low: number;
-    estimated_credit_high: number;
-    reasoning: string;
-    what_to_verify: string[];
-  }>({
+  const result = await jsonCompletion({
     system: SYSTEM,
     user: `${profileBlurb(profile)}\n\n${creditBlurb(credit)}\n\nDoes this business qualify?`,
-    schema: SCHEMA,
+    schema: EligibilitySchema,
     schemaName: "eligibility",
-    temperature: 0.1,
   });
 
   return { credit, ...result };

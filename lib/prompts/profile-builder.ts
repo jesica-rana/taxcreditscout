@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { jsonCompletion } from "../openai";
 import type { RawIntake, UserProfile } from "../types";
 
@@ -21,25 +22,15 @@ If the user's free_text mentions something specific (e.g. "we had a fire damage"
 
 Infer industries from the business description. Use simple lowercase tags from this list when possible: agriculture, construction, manufacturing, software, retail, food_service, healthcare, professional_services, real_estate, transportation, finance, energy, nonprofit, other.`;
 
-const SCHEMA = {
-  type: "object",
-  additionalProperties: false,
-  properties: {
-    industries: {
-      type: "array",
-      items: { type: "string" },
-      description: "Inferred industry tags",
-    },
-    derived_queries: {
-      type: "array",
-      items: { type: "string" },
-      minItems: 8,
-      maxItems: 8,
-      description: "Exactly 8 search queries covering different angles",
-    },
-  },
-  required: ["industries", "derived_queries"],
-} as const;
+const ProfileSchema = z.object({
+  industries: z
+    .array(z.string())
+    .describe("Inferred industry tags"),
+  derived_queries: z
+    .array(z.string())
+    .length(8)
+    .describe("Exactly 8 search queries covering different angles"),
+});
 
 export async function buildProfile(raw: RawIntake): Promise<UserProfile> {
   const userMessage = `Business description: ${raw.business_description}
@@ -52,15 +43,11 @@ Free text: ${raw.free_text ?? "(none)"}
 
 Build the profile.`;
 
-  const result = await jsonCompletion<{
-    industries: string[];
-    derived_queries: string[];
-  }>({
+  const result = await jsonCompletion({
     system: SYSTEM,
     user: userMessage,
-    schema: SCHEMA,
+    schema: ProfileSchema,
     schemaName: "profile",
-    temperature: 0.3,
   });
 
   return {

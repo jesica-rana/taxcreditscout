@@ -14,11 +14,14 @@ export async function GET(
   if (!session) return NextResponse.json({ error: "not found" }, { status: 404 });
   if (!session.paid) return NextResponse.json({ error: "locked" }, { status: 402 });
 
-  const buffer = await renderToBuffer(
-    React.createElement(ReportPdf, { report: session.report })
-  );
+  // `renderToBuffer` accepts a Document element; React.createElement here is
+  // typed too loosely for TS strict mode, so we cast through `any`.
+  const element = React.createElement(ReportPdf, { report: session.report });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const buffer = await renderToBuffer(element as any);
 
-  return new NextResponse(buffer, {
+  // Convert Buffer → Uint8Array so `NextResponse` accepts it as a BodyInit.
+  return new NextResponse(new Uint8Array(buffer), {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `attachment; filename="taxcredit-audit-${params.id.slice(0, 8)}.pdf"`,

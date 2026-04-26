@@ -1,8 +1,8 @@
 import Stripe from "stripe";
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-09-30.acacia",
-});
+// API version is taken from the installed Stripe SDK default; pinning here led
+// to drift when SDK was upgraded. Stripe API is backwards compatible.
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function createCheckoutSession(args: {
   sessionId: string;

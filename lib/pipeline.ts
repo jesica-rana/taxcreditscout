@@ -1,4 +1,4 @@
-import { embed, embedBatch } from "./openai";
+import { embedBatch } from "./openai";
 import { searchCredits } from "./qdrant";
 import { buildProfile } from "./prompts/profile-builder";
 import { verifyAll } from "./prompts/eligibility-verifier";
@@ -32,7 +32,9 @@ export async function runPipeline(args: {
   const t1 = Date.now();
 
   onProgress?.("retrieval");
-  const queryVectors = await embedBatch(profile.derived_queries);
+  // Voyage AI: pass "query" inputType so the model uses the retrieval-side
+  // weights. Documents are indexed with the default "document" inputType.
+  const queryVectors = await embedBatch(profile.derived_queries, "query");
   const candidateMap = new Map<string, Credit>();
   for (const vec of queryVectors) {
     const hits = await searchCredits({ vector: vec, profile, limit: 20 });
