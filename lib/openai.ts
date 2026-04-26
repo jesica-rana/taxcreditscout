@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import { z, type ZodType } from "zod";
+import { z, type ZodType } from "zod/v4";
 
 export const anthropic = new Anthropic();
 
@@ -88,7 +88,8 @@ export async function jsonCompletion<S extends ZodType>(
     max_tokens: args.maxTokens ?? 16000,
     system,
     messages: [{ role: "user", content: userContent }],
-    output_config: { format: zodOutputFormat(args.schema) },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    output_config: { format: zodOutputFormat(args.schema as any) },
   });
 
   if (!response.parsed_output) {

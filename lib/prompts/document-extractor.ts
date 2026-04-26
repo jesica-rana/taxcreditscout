@@ -8,7 +8,7 @@
  * markers in the text and (in v2) blacked out in the image.
  */
 
-import { z } from "zod";
+import { z } from "zod/v4";
 import { jsonCompletion, type UserContentBlock } from "../openai";
 import type { RawIntake } from "../types";
 

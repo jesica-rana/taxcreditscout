@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 import { jsonCompletion } from "../openai";
 import type { Report, ReportSection, UserProfile, VerifiedCredit } from "../types";
 

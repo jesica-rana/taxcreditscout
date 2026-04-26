@@ -10,6 +10,8 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "init-qdrant": "tsx scripts/init-qdrant.ts",
+    "reset-qdrant": "tsx scripts/reset-qdrant.ts",
+    "verify-qdrant": "tsx scripts/verify-qdrant.ts",
     "scrape": "tsx scripts/extract-credits.ts",
     "embed": "tsx scripts/embed-credits.ts",
     "seed": "tsx scripts/seed-from-sample.ts"

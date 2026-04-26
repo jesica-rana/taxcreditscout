@@ -6,13 +6,11 @@
  *   npm run embed -- --file=data/seed/sample-credits.json
  */
 
+import "./load-env";
+
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import * as dotenv from "dotenv";
-dotenv.config({ path: ".env.local" });
-dotenv.config();
-
-import { z } from "zod";
+import { z } from "zod/v4";
 import { embedBatch, jsonCompletion, EMBED_DIM } from "../lib/openai";
 import { ensureCollection, upsertCreditsBatch } from "../lib/qdrant";
 import { buildEmbeddingText } from "../lib/embedding-text";

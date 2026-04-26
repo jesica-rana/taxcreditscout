@@ -1,6 +1,4 @@
-import * as dotenv from "dotenv";
-dotenv.config({ path: ".env.local" });
-dotenv.config();
+import "./load-env";
 
 import { ensureCollection, COLLECTION } from "../lib/qdrant";
 import { EMBED_DIM, EMBED_MODEL } from "../lib/openai";

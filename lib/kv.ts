@@ -1,15 +1,18 @@
-import { kv } from "@vercel/kv";
 import type { Session } from "./types";
 
-const TTL_SECONDS = 60 * 60 * 24 * 90; // 90 days
+// In-memory session store. Lost on process restart — fine for hackathon dev.
+// Attached to globalThis so Next.js hot-reload doesn't wipe it.
+// Swap for Vercel KV / Upstash Redis before deploying to production.
+const g = globalThis as unknown as { __sessionStore?: Map<string, Session> };
+const store: Map<string, Session> = g.__sessionStore ?? new Map();
+g.__sessionStore = store;
 
 export async function putSession(session: Session): Promise<void> {
-  await kv.set(`session:${session.id}`, session, { ex: TTL_SECONDS });
+  store.set(session.id, session);
 }
 
 export async function getSession(id: string): Promise<Session | null> {
-  const s = await kv.get<Session>(`session:${id}`);
-  return s ?? null;
+  return store.get(id) ?? null;
 }
 
 export async function markPaid(

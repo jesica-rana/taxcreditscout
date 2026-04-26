@@ -6,12 +6,10 @@
  *   npm run scrape -- --tier=1    # just federal
  */
 
+import "./load-env";
+
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import * as dotenv from "dotenv";
-dotenv.config({ path: ".env.local" });
-dotenv.config();
-
 import { SOURCES, type Source } from "./sources";
 import { extractCredits } from "../lib/prompts/credit-extractor";
 import type { Credit } from "../lib/types";
