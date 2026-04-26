@@ -36,6 +36,8 @@ export interface Credit {
   url: string;
   estimated_avg_finding: number;
   source_authority?: string;
+  irc_section?: string;
+  jct_5yr_cost_billions?: number;
 }
 
 export interface RawIntake {
@@ -78,12 +80,15 @@ export interface ReportSection {
   estimated_low: number;
   estimated_high: number;
   why_you_qualify: string;
+  how_it_works: string; // 2-sentence plain-language summary of the credit itself
+  irc_section: string | null; // e.g. "41" for federal R&D; null for state credits
   action_steps: string[];
   form: string;
   deadline: string;
   deadline_critical: boolean;
   documentation: string[];
   source_url: string;
+  what_to_verify: string[]; // verifier's caveats — what the user/CPA should confirm
 }
 
 export interface Report {
@@ -105,6 +110,7 @@ export interface Report {
 
 export interface Session {
   id: string;
+  user_id: string | null;
   email: string | null;
   raw: RawIntake;
   profile: UserProfile;

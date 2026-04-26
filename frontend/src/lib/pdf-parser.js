@@ -33,12 +33,36 @@ export async function parsePdf(file) {
 
   for (let i = 1; i <= doc.numPages; i++) {
     const page = await doc.getPage(i)
+    const viewport = page.getViewport({ scale: 2 })
 
     const textContent = await page.getTextContent()
-    const text = textContent.items.map((item) => ('str' in item ? item.str : '')).join(' ')
+    const itemTexts = textContent.items.map((it) => ('str' in it ? it.str : ''))
+    const text = itemTexts.join(' ')
     totalChars += text.length
 
-    const viewport = page.getViewport({ scale: 2 })
+    // Build per-item char ranges and canvas-space bboxes so the image
+    // redactor can blacken the exact rectangles holding PII.
+    const items = []
+    let cursor = 0
+    for (let k = 0; k < textContent.items.length; k++) {
+      const it = textContent.items[k]
+      const str = itemTexts[k]
+      if ('str' in it && str.length > 0) {
+        const tx = lib.Util.transform(viewport.transform, it.transform)
+        const fontHeight = Math.hypot(tx[2], tx[3])
+        const widthPx = (it.width || 0) * viewport.scale
+        items.push({
+          charStart: cursor,
+          charEnd: cursor + str.length,
+          x: tx[4],
+          y: tx[5] - fontHeight,
+          width: widthPx,
+          height: fontHeight,
+        })
+      }
+      cursor += str.length + 1
+    }
+
     const canvas = document.createElement('canvas')
     canvas.width = viewport.width
     canvas.height = viewport.height
@@ -50,6 +74,7 @@ export async function parsePdf(file) {
     pages.push({
       pageNumber: i,
       text,
+      items,
       imageDataUrl,
       width: viewport.width,
       height: viewport.height,
@@ -60,11 +85,12 @@ export async function parsePdf(file) {
 }
 
 /**
- * Draw a redaction banner on top of a page image. The MVP doesn't compute exact
- * text bounding boxes — we mark "this page had N PII tokens redacted" via a top
- * banner. v2 will use pdfjs textContent transforms to draw tight boxes per token.
+ * Paint black rectangles over every text item that overlaps a PII token's char
+ * range, then add a top banner with the redaction count. The result is what
+ * gets shown to the user AND what gets sent to the vision API — no PII pixels
+ * leave the browser.
  */
-export function overlayRedactionBanner(imageDataUrl, redactionCount, width, height) {
+export function redactImage(imageDataUrl, tokens, items, width, height) {
   return new Promise((resolve, reject) => {
     const img = new Image()
     img.onload = () => {
@@ -75,12 +101,26 @@ export function overlayRedactionBanner(imageDataUrl, redactionCount, width, heig
       if (!ctx) return reject(new Error('ctx unavailable'))
       ctx.drawImage(img, 0, 0, width, height)
 
-      if (redactionCount > 0) {
+      ctx.fillStyle = '#000000'
+      const pad = 2
+      for (const token of tokens) {
+        for (const item of items) {
+          if (item.charEnd <= token.start || item.charStart >= token.end) continue
+          ctx.fillRect(
+            item.x - pad,
+            item.y - pad,
+            item.width + pad * 2,
+            item.height + pad * 2
+          )
+        }
+      }
+
+      if (tokens.length > 0) {
         ctx.fillStyle = '#0a0a0b'
         ctx.fillRect(0, 0, width, 40)
         ctx.fillStyle = '#fafafa'
         ctx.font = 'bold 18px sans-serif'
-        ctx.fillText(`[${redactionCount} PII tokens redacted on this page]`, 16, 26)
+        ctx.fillText(`[${tokens.length} PII tokens redacted on this page]`, 16, 26)
       }
       resolve(canvas.toDataURL('image/png'))
     }

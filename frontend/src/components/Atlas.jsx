@@ -297,7 +297,7 @@ const atlasStyles = {
   },
   detailBreak: { display: "flex", flexDirection: "column", gap: 10 },
 
-  barRow: { display: "grid", gridTemplateColumns: "60px 1fr 32px", alignItems: "center", gap: 12 },
+  barRow: { display: "grid", gridTemplateColumns: "76px 1fr 36px", alignItems: "center", gap: 14 },
   barLbl: { fontFamily: "var(--mono)", fontSize: 11, color: "var(--mute)", textTransform: "uppercase", letterSpacing: "0.06em" },
   barTrack: { height: 8, background: "var(--paper-3)", borderRadius: 99, overflow: "hidden" },
   barFill: { height: "100%", borderRadius: 99, transition: "width 0.32s ease" },

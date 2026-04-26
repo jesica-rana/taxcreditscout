@@ -43,7 +43,7 @@ function RLine({ line, li, redactedKeys }) {
 }
 
 function Redactor() {
-  const [phase, setPhase] = useState('idle') // idle | scanning | done
+  const [phase, setPhase] = useState('scanning') // idle | scanning | done
   const [scanY, setScanY] = useState(0)
   const [redactedKeys, setRedactedKeys] = useState(new Set())
   const [tokensFound, setTokensFound] = useState([])
@@ -97,6 +97,12 @@ function Redactor() {
     return () => cancelAnimationFrame(raf)
   }, [phase, allTokens])
 
+  useEffect(() => {
+    if (phase !== 'done') return
+    const id = setTimeout(() => startScan(), 2500)
+    return () => clearTimeout(id)
+  }, [phase])
+
   return (
     <div className="redactor-shell">
       <div className="redactor-bar">
@@ -109,7 +115,11 @@ function Redactor() {
           <b>1040.pdf</b>
           <span className="rdoc-mute">· 4 pages</span>
         </span>
-        <button className="redactor-action" onClick={phase === 'idle' ? startScan : reset}>
+        <button
+          className="redactor-action"
+          onClick={() => { if (phase !== 'scanning') startScan() }}
+          disabled={phase === 'scanning'}
+        >
           {phase === 'idle' && <>▸ Run redactor</>}
           {phase === 'scanning' && 'Scanning…'}
           {phase === 'done' && <>↺ Replay</>}

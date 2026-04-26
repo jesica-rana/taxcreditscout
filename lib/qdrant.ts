@@ -72,13 +72,18 @@ export async function searchCredits(args: {
 }): Promise<Credit[]> {
   const { vector, profile, limit = 20 } = args;
 
-  // Filter: must be Federal OR match user's state. Industry filter is permissive.
+  // Filter: must be Federal OR match user's state. Normalize to uppercase 2-letter
+  // postal code so "ca" and "CA" both match credits indexed as "CA". Trim
+  // whitespace defensively.
+  const stateCode = (profile.state ?? "").trim().toUpperCase();
   const filter = {
     must: [
       {
         should: [
           { key: "jurisdiction", match: { value: "Federal" } },
-          { key: "state", match: { value: profile.state } },
+          ...(stateCode
+            ? [{ key: "state", match: { value: stateCode } }]
+            : []),
         ],
       },
     ],
@@ -94,14 +99,17 @@ export async function searchCredits(args: {
   return results
     .map((r) => r.payload as unknown as Credit)
     .filter((c) => {
-      // Post-filter for size/industry to keep Qdrant filter simple
+      // Hard size filter: statute is unambiguous, OK to drop here.
       if (c.company_size_min_employees > profile.employee_count) return false;
       if (
         c.company_size_max_employees != null &&
         c.company_size_max_employees < profile.employee_count
       )
         return false;
-      if (c.industries.includes("all")) return true;
-      return c.industries.some((i) => profile.industries.includes(i));
+      // No industry pre-filter — let the verifier decide. Tag normalization
+      // is too brittle (e.g., "aerospace" vs "manufacturing"), and semantic
+      // search already ranks by relevance. Verifier is much better at
+      // judging whether a credit applies.
+      return true;
     });
 }

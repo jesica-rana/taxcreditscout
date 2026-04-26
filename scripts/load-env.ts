@@ -10,5 +10,7 @@
 
 import * as dotenv from "dotenv";
 
-dotenv.config({ path: ".env.local" });
+// override:true matches Next.js dev mode, which always treats .env.local as
+// the source of truth even if a shell-level env var is set (or set to empty).
+dotenv.config({ path: ".env.local", override: true });
 dotenv.config();

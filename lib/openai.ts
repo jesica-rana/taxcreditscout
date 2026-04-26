@@ -62,6 +62,7 @@ export interface JsonCompletionArgs<S extends ZodType> {
   temperature?: number; // unused on Opus 4.7 (parameter removed by Anthropic)
   cacheSystem?: boolean; // default true; harmless if prompt is below cache minimum
   maxTokens?: number;
+  model?: string; // override LLM_MODEL per call (e.g., use sonnet for cheap enrichment)
 }
 
 export async function jsonCompletion<S extends ZodType>(
@@ -84,7 +85,7 @@ export async function jsonCompletion<S extends ZodType>(
         ];
 
   const response = await anthropic.messages.parse({
-    model: LLM_MODEL,
+    model: args.model ?? LLM_MODEL,
     max_tokens: args.maxTokens ?? 16000,
     system,
     messages: [{ role: "user", content: userContent }],

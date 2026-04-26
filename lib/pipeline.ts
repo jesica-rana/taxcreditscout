@@ -35,9 +35,11 @@ export async function runPipeline(args: {
   // Voyage AI: pass "query" inputType so the model uses the retrieval-side
   // weights. Documents are indexed with the default "document" inputType.
   const queryVectors = await embedBatch(profile.derived_queries, "query");
+  const hitGroups = await Promise.all(
+    queryVectors.map((vec) => searchCredits({ vector: vec, profile, limit: 20 }))
+  );
   const candidateMap = new Map<string, Credit>();
-  for (const vec of queryVectors) {
-    const hits = await searchCredits({ vector: vec, profile, limit: 20 });
+  for (const hits of hitGroups) {
     for (const c of hits) candidateMap.set(c.id, c);
   }
   const candidates = Array.from(candidateMap.values());
@@ -46,7 +48,7 @@ export async function runPipeline(args: {
   onProgress?.("verifying");
   const allVerified = await verifyAll(profile, candidates, 8);
   const verified = allVerified
-    .filter((v) => v.qualifies !== "no" && v.confidence >= 0.6)
+    .filter((v) => v.qualifies !== "no" && v.confidence >= 0.5)
     .sort((a, b) => b.estimated_credit_high - a.estimated_credit_high);
   const t3 = Date.now();
 

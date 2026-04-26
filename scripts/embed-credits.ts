@@ -28,6 +28,8 @@ async function generateScenarios(credit: Credit): Promise<string[]> {
       user: `Credit: ${credit.name}\nEligibility: ${credit.eligibility_text}\n\nWrite 3 scenarios.`,
       schema: ScenariosSchema,
       schemaName: "scenarios",
+      // Sonnet handles this short, structured task fine and is ~10x cheaper than Opus.
+      model: "claude-sonnet-4-6",
     });
     return result.scenarios;
   } catch {
@@ -65,12 +67,20 @@ async function main() {
     );
   }
 
-  // Embed in batches of 32 with inputType="document" for index-side weighting
-  console.log("Embedding...");
+  // Embed in batches with inputType="document" for index-side weighting.
+  // Voyage free tier (no payment method) caps at 3 RPM and 10K TPM. Each
+  // credit's embedding text is ~2.5K tokens, so batch=4 (~10K tokens) +
+  // 65s sleep between batches keeps us safely inside both limits. Override
+  // with VOYAGE_EMBED_BATCH and VOYAGE_EMBED_SLEEP_MS once paid limits are on.
+  const batchSize = Number(process.env.VOYAGE_EMBED_BATCH || 4);
+  const sleepMs = Number(process.env.VOYAGE_EMBED_SLEEP_MS || 65000);
+  console.log(
+    `Embedding (batch=${batchSize}, sleep=${sleepMs / 1000}s between batches)...`
+  );
   const points: { id: string | number; vector: number[]; payload: Credit }[] =
     [];
-  for (let i = 0; i < credits.length; i += 32) {
-    const batch = credits.slice(i, i + 32);
+  for (let i = 0; i < credits.length; i += batchSize) {
+    const batch = credits.slice(i, i + batchSize);
     const texts = batch.map((c) =>
       buildEmbeddingText(c, scenariosByCredit.get(c.id) || [])
     );
@@ -78,9 +88,11 @@ async function main() {
     batch.forEach((c, idx) =>
       points.push({ id: uuidFromId(c.id), vector: vectors[idx], payload: c })
     );
-    console.log(
-      `  embedded: ${Math.min(i + 32, credits.length)}/${credits.length}`
-    );
+    const done = Math.min(i + batchSize, credits.length);
+    console.log(`  embedded: ${done}/${credits.length}`);
+    if (done < credits.length) {
+      await new Promise((r) => setTimeout(r, sleepMs));
+    }
   }
 
   // Upsert in batches of 64

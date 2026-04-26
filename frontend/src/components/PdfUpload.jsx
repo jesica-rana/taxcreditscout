@@ -1,7 +1,7 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { parsePdf, overlayRedactionBanner } from '../lib/pdf-parser.js'
+import { parsePdf, redactImage } from '../lib/pdf-parser.js'
 import { redact } from '../lib/redactor.js'
 import { runIntakeFromPdf } from '../lib/api.js'
 import RedactionPreview from './RedactionPreview.jsx'
@@ -14,7 +14,7 @@ const STAGES = {
   submitting: 'Running 4 agents…',
 }
 
-function PdfUpload({ hint = null }) {
+function PdfUpload({ hint = null, onStageChange }) {
   const navigate = useNavigate()
   const fileInput = useRef(null)
   const [stage, setStage] = useState('idle')
@@ -23,6 +23,10 @@ function PdfUpload({ hint = null }) {
   const [allTokens, setAllTokens] = useState([])
   const [reviewed, setReviewed] = useState(false)
   const [dragOver, setDragOver] = useState(false)
+
+  useEffect(() => {
+    onStageChange?.(stage)
+  }, [stage, onStageChange])
 
   const handleFile = useCallback(async (file) => {
     if (!file) return
@@ -39,7 +43,7 @@ function PdfUpload({ hint = null }) {
       const aggregated = []
       for (const p of parsed.pages) {
         const r = redact(p.text)
-        const overlaid = await overlayRedactionBanner(p.imageDataUrl, r.tokens.length, p.width, p.height)
+        const overlaid = await redactImage(p.imageDataUrl, r.tokens, p.items, p.width, p.height)
         prepared.push({
           pageNumber: p.pageNumber,
           redactedText: r.redactedText,

@@ -113,6 +113,7 @@ function Nav() {
           <a href="#privacy">Privacy</a>
         </nav>
         <div className="nav-right">
+          <Link to="/login" className="nav-signin">Sign in</Link>
           <Link to="/upload" className="nav-cta">Find my credits — $10</Link>
         </div>
       </div>

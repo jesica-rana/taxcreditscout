@@ -52,7 +52,9 @@ Build the profile.`;
 
   return {
     business_description: raw.business_description,
-    state: raw.state,
+    // Normalize state to uppercase 2-letter postal code so downstream Qdrant
+    // filter matches credits indexed as "CA" regardless of intake casing.
+    state: (raw.state ?? "").trim().toUpperCase(),
     city: raw.city,
     employee_count: raw.employee_count,
     revenue_band: raw.revenue_band,

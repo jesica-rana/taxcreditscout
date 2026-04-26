@@ -28,8 +28,13 @@ dist/
 data/credits.json
 data/cache/
 data/raw/
+# JCT ingest checkpoint — regeneratable from data/sources/jct-x-45-25.pdf
+data/credits-federal-jct.stage1.json
 *.tsbuildinfo
 next-env.d.ts
 
 # vercel
 .vercel
+
+# Claude Code local state (worktrees, lock files, per-machine permissions)
+.claude/

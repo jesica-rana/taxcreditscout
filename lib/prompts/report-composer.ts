@@ -32,12 +32,48 @@ const ReportSchema = z.object({
 const DISCLAIMER =
   "This report is informational research and not tax advice. All findings should be verified with a qualified CPA or tax attorney before filing. TaxCreditScout never interacts with the IRS on your behalf.";
 
+function firstNSentences(text: string, n = 2): string {
+  const sentences = text.match(/[^.!?]+[.!?]+\s*/g);
+  if (!sentences || sentences.length === 0) return text.slice(0, 280);
+  return sentences.slice(0, n).join("").trim();
+}
+
 export async function composeReport(args: {
   sessionId: string;
   profile: UserProfile;
   verified: VerifiedCredit[];
 }): Promise<Report> {
   const { sessionId, profile, verified } = args;
+
+  // Skip the LLM entirely on zero matches — no point asking it to write a
+  // report about credits that don't exist. Return an honest empty-state
+  // instead of a $0 report that looks broken.
+  if (verified.length === 0) {
+    return {
+      session_id: sessionId,
+      generated_at: new Date().toISOString(),
+      business_summary: `Based on your intake (${profile.business_description.slice(0, 120)}${profile.business_description.length > 120 ? "…" : ""}), we couldn't confidently match any credits in our database. This usually means either (a) the intake was too sparse for the verifier to confirm a match, or (b) the credits you might qualify for require a more specific activity description.`,
+      total_estimated_low: 0,
+      total_estimated_high: 0,
+      critical_deadlines: [],
+      federal: [],
+      state: [],
+      local: [],
+      action_plan_this_week: [
+        "Retake the quiz with more detail about specific activities (R&D projects, recent hires from target groups, energy installations, retirement plans, health benefits offered).",
+        "Talk to a CPA — even a brief consultation often surfaces credits an automated tool misses.",
+      ],
+      action_plan_this_month: [
+        "Review your prior-year return for credits you might be entitled to retroactively (R&D credits can be claimed up to 3 years back via amended return).",
+      ],
+      action_plan_this_quarter: [
+        "Set up a quarterly review with your CPA to capture credits as activities happen, not at year-end.",
+      ],
+      cpa_handoff_summary:
+        "TaxCreditScout did not surface any high-confidence credit matches based on the intake provided. This is not a guarantee of non-eligibility — please review with your CPA, particularly around R&D credit (§41), Work Opportunity Tax Credit (§51), and any state-level credits for your jurisdiction.",
+      disclaimer: DISCLAIMER,
+    };
+  }
 
   const userMessage = `Profile:
 ${profile.business_description}
@@ -77,6 +113,8 @@ Compose the report.`;
       estimated_low: v.estimated_credit_low,
       estimated_high: v.estimated_credit_high,
       why_you_qualify: llmPart?.why_you_qualify || v.reasoning,
+      how_it_works: firstNSentences(v.credit.eligibility_text, 2),
+      irc_section: v.credit.irc_section ?? null,
       action_steps: llmPart?.action_steps || [
         "Review eligibility with your CPA",
         "Gather supporting documentation",
@@ -86,6 +124,7 @@ Compose the report.`;
       deadline_critical: v.credit.deadline_critical,
       documentation: v.credit.documentation_required,
       source_url: v.credit.url,
+      what_to_verify: v.what_to_verify,
     };
   };
 

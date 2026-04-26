@@ -14,14 +14,20 @@
     "verify-qdrant": "tsx scripts/verify-qdrant.ts",
     "scrape": "tsx scripts/extract-credits.ts",
     "embed": "tsx scripts/embed-credits.ts",
-    "seed": "tsx scripts/seed-from-sample.ts"
+    "seed": "tsx scripts/seed-from-sample.ts",
+    "ingest:jct": "tsx scripts/ingest-jct.ts",
+    "ingest:state-rd": "tsx scripts/ingest-state-rd.ts",
+    "merge": "tsx scripts/merge-credits.ts",
+    "enrich:ecfr": "tsx scripts/enrich-from-ecfr.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",
     "@qdrant/js-client-rest": "^1.11.0",
     "@react-pdf/renderer": "^3.4.4",
     "@vercel/kv": "^2.0.0",
+    "bcryptjs": "^3.0.3",
     "compromise": "^14.14.0",
+    "jsonwebtoken": "^9.0.3",
     "next": "14.2.13",
     "openai": "^4.67.0",
     "pdfjs-dist": "^4.7.76",
@@ -32,6 +38,8 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20.16.5",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",

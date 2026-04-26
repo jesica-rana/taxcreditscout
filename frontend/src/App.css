@@ -1954,6 +1954,138 @@ input:focus, select:focus, textarea:focus {
   .results-block-warn { padding: 20px; }
 }
 
+/* ================================================================
+   Preview page (paywall teaser before unlock)
+   ================================================================ */
+.preview-page { padding-bottom: 80px; }
+
+.critical-strip {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 14px 32px;
+  border: 1px solid color-mix(in srgb, var(--warn) 30%, transparent);
+  background: color-mix(in srgb, var(--warn) 8%, var(--bg));
+  color: var(--warn);
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-top: 24px;
+}
+
+.preview-credit-list {
+  list-style: none;
+  max-width: 1100px;
+  margin: 32px auto 56px;
+  padding: 0 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.preview-credit-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 20px 24px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-1);
+  transition: border-color 200ms ease;
+}
+.preview-credit-row:hover { border-color: var(--border-strong); }
+
+.preview-credit-info { min-width: 0; }
+.preview-credit-info h3 {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 6px;
+  color: var(--text);
+}
+.preview-credit-info p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+.deadline-pill {
+  color: var(--warn);
+  font-weight: 600;
+}
+
+.preview-credit-locked {
+  flex-shrink: 0;
+  font-size: 16px;
+  color: var(--money);
+  white-space: nowrap;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+}
+
+/* Paywall card */
+.paywall-card {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface-1);
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 48px;
+  align-items: center;
+}
+.paywall-card .eyebrow {
+  display: block;
+  margin-bottom: 12px;
+  color: var(--text-3);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+.paywall-card h2 {
+  font-family: 'Inter Tight', sans-serif;
+  font-weight: 700;
+  font-size: clamp(32px, 4vw, 48px);
+  letter-spacing: -0.025em;
+  margin: 0 0 24px;
+  color: var(--text);
+}
+.paywall-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.paywall-card li {
+  position: relative;
+  padding-left: 22px;
+  color: var(--text-2);
+  line-height: 1.5;
+  font-size: 15px;
+}
+.paywall-card li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 9px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--money);
+}
+
+.paywall-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: stretch;
+}
+.paywall-cta .button { width: 100%; }
+
 /* === Mode badge on Results === */
 .results-mode-row {
   display: flex;
@@ -2241,6 +2373,134 @@ input:focus, select:focus, textarea:focus {
 }
 @media (max-width: 600px) {
   .redaction-actions { flex-direction: column-reverse; }
+}
+
+/* ================================================================
+   Responsive — Upload + Preview (mobile-first refinements)
+   ================================================================ */
+
+/* Hero nav: shrink padding + allow wrap on small screens */
+@media (max-width: 768px) {
+  .fluz-style .hero-nav {
+    padding: 16px 20px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .fluz-style .brand-mark { font-size: 15px; }
+  .fluz-style .nav-links { gap: 16px; }
+}
+@media (max-width: 480px) {
+  .fluz-style .hero-nav {
+    padding: 14px 16px;
+  }
+  .fluz-style .hero-nav .text-link {
+    font-size: 12px;
+  }
+}
+
+/* Deadline banner: better small-screen wrapping */
+@media (max-width: 600px) {
+  .deadline-banner {
+    padding: 10px 16px;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+}
+
+/* ============ Upload page ============ */
+@media (max-width: 768px) {
+  .upload-shell-wrap {
+    padding: 32px 20px 0;
+  }
+  .upload-header { margin-bottom: 32px; }
+  .upload-header .section-headline {
+    font-size: clamp(32px, 8vw, 48px);
+    margin: 12px 0 16px;
+  }
+  .drop-zone {
+    padding: 40px 20px;
+    border-radius: 14px;
+  }
+  .drop-icon {
+    width: 56px;
+    height: 56px;
+  }
+  .drop-icon svg { width: 32px; height: 32px; }
+  .drop-content { gap: 12px; }
+  .drop-content h3 { font-size: 18px; }
+  .drop-content p { font-size: 14px; }
+  .privacy-marks {
+    gap: 12px 16px;
+    font-size: 12px;
+  }
+}
+@media (max-width: 420px) {
+  .drop-zone { padding: 32px 16px; }
+  .drop-content h3 { font-size: 17px; }
+}
+
+/* ============ Redaction preview ============ */
+@media (max-width: 768px) {
+  .redaction-shell { gap: 20px; }
+  .redaction-banner {
+    padding: 16px;
+    gap: 12px;
+  }
+  .redaction-lock { font-size: 20px; }
+  .redaction-title { font-size: 14px; }
+  .redaction-grid { gap: 16px; }
+  .redaction-summary { padding: 16px; }
+  .redaction-image { padding: 12px; }
+  .redaction-confirm {
+    align-items: flex-start;
+    padding: 14px 16px;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+}
+
+/* ============ Preview page ============ */
+@media (max-width: 768px) {
+  .preview-page { padding-bottom: 56px; }
+  .results-summary { font-size: 16px; margin-bottom: 24px; }
+  .critical-strip {
+    margin: 16px 20px;
+    padding: 12px 16px;
+    font-size: 13px;
+    border-radius: 10px;
+  }
+  .preview-credit-list {
+    margin: 24px auto 40px;
+    padding: 0 20px;
+    gap: 10px;
+  }
+  .preview-credit-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 16px 18px;
+    border-radius: 12px;
+  }
+  .preview-credit-info h3 { font-size: 16px; }
+  .preview-credit-info p { font-size: 12px; }
+  .preview-credit-locked { font-size: 15px; }
+  .paywall-card {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 28px 24px;
+    margin: 0 20px;
+    border-radius: 16px;
+  }
+  .paywall-card h2 { font-size: clamp(26px, 6vw, 36px); margin-bottom: 16px; }
+  .paywall-card li { font-size: 14px; }
+}
+@media (max-width: 420px) {
+  .preview-credit-list { padding: 0 16px; }
+  .critical-strip { margin: 16px; }
+  .paywall-card {
+    margin: 0 16px;
+    padding: 24px 20px;
+  }
 }
 
 /* ================================================================

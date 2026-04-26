@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { runPipeline } from "@/lib/pipeline";
 import { putSession } from "@/lib/kv";
 import { extractFromDocument } from "@/lib/prompts/document-extractor";
+import { getCurrentUser } from "@/lib/auth";
 import type { RawIntake, Session } from "@/lib/types";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
@@ -48,6 +49,16 @@ const PdfSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  // AUTH DISABLED — anonymous intake. Re-enable by un-commenting the gate below.
+  // const currentUser = await getCurrentUser();
+  // if (!currentUser) {
+  //   return NextResponse.json(
+  //     { error: "Sign in to run an intake." },
+  //     { status: 401 }
+  //   );
+  // }
+  const currentUser = { id: "anon", email: "anon@creditbowl.local" };
+
   let body: any;
   try {
     body = await req.json();
@@ -78,7 +89,8 @@ export async function POST(req: NextRequest) {
     const result = await runPipeline({ sessionId, raw });
     const session: Session = {
       id: sessionId,
-      email: raw.email,
+      user_id: currentUser.id,
+      email: raw.email ?? currentUser.email,
       raw,
       profile: result.profile,
       report: result.report,

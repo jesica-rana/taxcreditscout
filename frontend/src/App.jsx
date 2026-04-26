@@ -9,6 +9,8 @@ const Loading = lazy(() => import('./pages/Loading.jsx'))
 const Upload = lazy(() => import('./pages/Upload.jsx'))
 const Preview = lazy(() => import('./pages/Preview.jsx'))
 const Results = lazy(() => import('./pages/Results.jsx'))
+const Login = lazy(() => import('./pages/Login.jsx'))
+const Dashboard = lazy(() => import('./pages/Dashboard.jsx'))
 
 function RouteFallback() {
   return (
@@ -34,6 +36,9 @@ function App() {
           <Route path="/results" element={<Results />} />
           <Route path="/results/:id" element={<Results />} />
           <Route path="/report/:id" element={<Results />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Login />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>

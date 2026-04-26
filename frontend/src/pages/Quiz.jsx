@@ -1,7 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import DeadlineBanner from '../components/DeadlineBanner.jsx'
+import '../strata.css'
+// AUTH DISABLED — quiz runs without sign-in. Re-enable by un-commenting:
+// import AuthChip from '../components/AuthChip.jsx'
+// import { useRequireAuth } from '../lib/auth.js'
 
 const defaultAnswers = {
   businessDescription: '',
@@ -41,27 +44,130 @@ const ACTIVITIES = [
   { key: 'started_retirement', title: 'Started 401(k) or SEP plan' },
 ]
 
+function LogoMark() {
+  return (
+    <span
+      className="logo-mark"
+      style={{ display: 'grid', placeItems: 'center', width: 32, height: 32 }}
+    >
+      <svg viewBox="0 0 32 32" width="32" height="32" aria-hidden="true">
+        <ellipse cx="16" cy="11" rx="12" ry="2.5" fill="none" stroke="var(--accent)" strokeWidth="2" />
+        <path
+          d="M 4 11 Q 4 26 16 26 Q 28 26 28 11"
+          fill="none"
+          stroke="var(--accent)"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <circle cx="11" cy="17" r="1.6" fill="var(--accent)" />
+        <circle cx="16" cy="19" r="1.6" fill="var(--money)" />
+        <circle cx="21" cy="17" r="1.6" fill="var(--paper)" opacity="0.7" />
+      </svg>
+    </span>
+  )
+}
+
+function calcDiff() {
+  const diff = Date.parse('2026-07-04T23:59:59-04:00') - Date.now()
+  if (diff <= 0) return null
+  return {
+    days: Math.floor(diff / 86_400_000),
+    hours: Math.floor((diff % 86_400_000) / 3_600_000),
+    minutes: Math.floor((diff % 3_600_000) / 60_000),
+    seconds: Math.floor((diff % 60_000) / 1000),
+  }
+}
+
+function DeadlineStrip() {
+  const [cd, setCd] = useState(calcDiff)
+  useEffect(() => {
+    const id = setInterval(() => setCd(calcDiff()), 1000)
+    return () => clearInterval(id)
+  }, [])
+  if (!cd) return null
+  const pct = Math.min(1, cd.days / 365)
+  const r = 9
+  const c = 2 * Math.PI * r
+  return (
+    <div className="deadline">
+      <div className="deadline-row">
+        <span className="deadline-pulse" />
+        <span className="deadline-text">
+          <b>{cd.days} days</b> until July 4, 2026 — last day to retroactively claim R&amp;D credits for TY 2022–2024.
+        </span>
+        <span className="deadline-clock">
+          <span className="clock-ring">
+            <svg width="24" height="24" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r={r} fill="none" stroke="var(--line-2)" strokeWidth="2" />
+              <circle
+                cx="12"
+                cy="12"
+                r={r}
+                fill="none"
+                stroke="var(--accent)"
+                strokeWidth="2"
+                strokeDasharray={`${c * pct} ${c}`}
+                strokeDashoffset={c * 0.25}
+                transform="rotate(-90 12 12)"
+                strokeLinecap="round"
+              />
+            </svg>
+            <span>
+              <span className="big">{cd.days}</span> days left
+            </span>
+          </span>
+        </span>
+      </div>
+    </div>
+  )
+}
+
+function QuizNav({ completion }) {
+  return (
+    <div className="nav">
+      <div className="wrap nav-row">
+        <Link to="/" className="logo">
+          <LogoMark />
+          <span style={{ fontFamily: 'var(--serif)', fontWeight: 400 }}>CreditBowl</span>
+        </Link>
+        <div className="nav-right upload-nav-right">
+          <span className="quiz-progress">{completion}% complete</span>
+          {/* <AuthChip /> */}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function Step({ n, label, children }) {
   return (
-    <fieldset className="quiz-step">
-      <legend>
-        <span className="step-num mono">{n}</span>
+    <div className="quiz-step">
+      <div className="quiz-step-head">
+        <span className="step-num">{n}</span>
         <span className="step-label">{label}</span>
-      </legend>
+      </div>
       {children}
-    </fieldset>
+    </div>
   )
 }
 
 function Quiz() {
   const navigate = useNavigate()
+  // AUTH DISABLED — quiz runs without sign-in.
+  // const { loading, user } = useRequireAuth()
   const [answers, setAnswers] = useState(defaultAnswers)
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = 'dark'
+  }, [])
 
   const completion = useMemo(() => {
     const required = ['businessDescription', 'state', 'employeeCount', 'email']
     const completed = required.filter((f) => String(answers[f]).trim())
     return Math.round((completed.length / required.length) * 100)
   }, [answers])
+
+  // if (loading || !user) return null
 
   const update = (field, value) => setAnswers((a) => ({ ...a, [field]: value }))
   const toggle = (key) =>
@@ -80,26 +186,43 @@ function Quiz() {
   }
 
   return (
-    <main id="main" className="page fluz-style quiz-editorial">
-      <DeadlineBanner />
-      <nav className="hero-nav" aria-label="Primary">
-        <Link to="/" className="brand-mark">Tax Credit Finder</Link>
-        <span className="quiz-progress mono">{completion}% complete</span>
-      </nav>
+    <div id="main" className="strata-page quiz-strata">
+      <DeadlineStrip />
+      <QuizNav completion={completion} />
+
+      <section className="hero quiz-hero">
+        <div className="hero-bg" aria-hidden="true">
+          <div className="drift" />
+          <div className="glow g1" />
+          <div className="glow g2" />
+        </div>
+        <div className="wrap">
+          <header className="quiz-head">
+            <span className="eyebrow">
+              <span className="eyebrow-dot" />
+              Intake · 6 questions
+            </span>
+            <h1 className="hero-title">
+              Tell us about<br />
+              <em>your business.</em>
+            </h1>
+            <p className="hero-sub">
+              Six short questions. About three minutes. We&apos;ll match you
+              against 347 federal, state, and local credits.
+            </p>
+            <div className="quiz-meter" aria-hidden="true">
+              <span style={{ width: `${completion}%` }} />
+            </div>
+          </header>
+        </div>
+      </section>
 
       <motion.section
-        className="quiz-shell"
+        className="quiz-shell-wrap"
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
       >
-        <header className="quiz-header">
-          <p className="eyebrow">Intake</p>
-          <h1 className="section-headline">Tell us about<br />your business.</h1>
-          <p className="section-sub">Six short questions. About three minutes. No login.</p>
-          <div className="meter"><span style={{ width: `${completion}%` }} /></div>
-        </header>
-
         <form className="quiz-stack" onSubmit={submit}>
           <Step n="01" label="What does your business do?">
             <textarea
@@ -116,7 +239,7 @@ function Quiz() {
                 <option value="">State</option>
                 {STATES.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
-              <input value={answers.city} onChange={(e) => update('city', e.target.value)} placeholder="City (optional)" />
+              <input type="text" value={answers.city} onChange={(e) => update('city', e.target.value)} placeholder="City (optional)" />
             </div>
           </Step>
 
@@ -170,12 +293,12 @@ function Quiz() {
           </Step>
 
           <div className="quiz-actions">
-            <Link to="/" className="button secondary">Back</Link>
+            <Link to="/" className="button secondary">← Back</Link>
             <button type="submit" className="button primary large">Run agents →</button>
           </div>
         </form>
       </motion.section>
-    </main>
+    </div>
   )
 }
 

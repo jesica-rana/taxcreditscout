@@ -27,3 +27,11 @@ export async function markPaid(
   await putSession(s);
   return s;
 }
+
+export async function listSessionsByUser(userId: string): Promise<Session[]> {
+  const owned: Session[] = [];
+  for (const s of store.values()) {
+    if (s.user_id === userId) owned.push(s);
+  }
+  return owned.sort((a, b) => b.created_at.localeCompare(a.created_at));
+}

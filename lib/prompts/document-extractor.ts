@@ -29,7 +29,9 @@ If the document is illegible or clearly not a tax document, return your best gue
 
 const DocumentExtractSchema = z.object({
   business_description: z.string(),
-  state: z.string().length(2),
+  // 2-letter postal code, or null if the LLM cannot determine it (illegible PDF,
+  // no state schedule, etc). Caller must fall back to user hint or default.
+  state: z.string().length(2).nullable(),
   city: z.string().nullable(),
   employee_count: z.number().int().min(0).max(100000),
   revenue_band: z.enum([
@@ -112,9 +114,20 @@ export async function extractFromDocument(
     schemaName: "document_extract",
   });
 
+  // Fall back to the user hint if the LLM couldn't extract a state.
+  // Last resort: throw — better than silently routing to the wrong jurisdiction.
+  const state =
+    parsed.state ??
+    (input.userHint?.state ? input.userHint.state.toUpperCase() : null);
+  if (!state) {
+    throw new Error(
+      "Could not determine state from document. Please use the form-based intake or provide a state hint."
+    );
+  }
   // PII-safe: email is always null on the PDF path
   return {
     ...parsed,
+    state,
     email: null,
   };
 }
