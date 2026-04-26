@@ -102,7 +102,7 @@ function Results() {
   return (
     <main id="main" className="page fluz-style results-editorial">
       <nav className="hero-nav" aria-label="Primary">
-        <Link to="/" className="brand-mark">Tax Credit Finder</Link>
+        <Link to="/" className="brand-mark">CreditBowl</Link>
         <div className="nav-links">
           <Link to="/quiz" className="text-link">Retake quiz</Link>
           <a href="#cpa" className="button primary compact">CPA handoff</a>

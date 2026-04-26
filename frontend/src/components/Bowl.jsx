@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef } from "react"
 /* CreditBowl — animated bowl filling with credits like a Chipotle bowl */
 
 const INGREDIENTS = [

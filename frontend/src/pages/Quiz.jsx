@@ -83,7 +83,7 @@ function Quiz() {
     <main id="main" className="page fluz-style quiz-editorial">
       <DeadlineBanner />
       <nav className="hero-nav" aria-label="Primary">
-        <Link to="/" className="brand-mark">Tax Credit Finder</Link>
+        <Link to="/" className="brand-mark">CreditBowl</Link>
         <span className="quiz-progress mono">{completion}% complete</span>
       </nav>
 

@@ -47,7 +47,7 @@ function Preview() {
     <main id="main" className="page fluz-style preview-page">
       <DeadlineBanner />
       <nav className="hero-nav" aria-label="Primary">
-        <Link to="/" className="brand-mark">Tax Credit Finder</Link>
+        <Link to="/" className="brand-mark">CreditBowl</Link>
         <Link to="/quiz" className="text-link">Retake quiz</Link>
       </nav>
 

@@ -12,7 +12,7 @@ function SampleReportPreview() {
     <figure className="sample-report">
       <div className="sample-chrome">
         <span /><span /><span />
-        <span className="sample-url mono">taxcreditfinder.com/report/<span className="muted">a3f2…</span></span>
+        <span className="sample-url mono">creditbowl.com/report/<span className="muted">a3f2…</span></span>
       </div>
       <div className="sample-body">
         <p className="sample-eyebrow">Tax Credit Audit · Acme Marketing Co</p>

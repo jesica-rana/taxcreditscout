@@ -9,7 +9,7 @@ function Upload() {
     <main id="main" className="page fluz-style upload-page">
       <DeadlineBanner />
       <nav className="hero-nav" aria-label="Primary">
-        <Link to="/" className="brand-mark">Tax Credit Finder</Link>
+        <Link to="/" className="brand-mark">CreditBowl</Link>
         <Link to="/quiz" className="text-link">Skip · answer 5 questions instead</Link>
       </nav>
 

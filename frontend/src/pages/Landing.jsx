@@ -215,6 +215,14 @@ function Footer() {
               <li><a href="#redactor">Privacy demo</a></li>
             </ul>
           </div>
+          <div>
+            <h4>Legal</h4>
+            <ul>
+              <li><Link to="/terms">Terms &amp; Conditions</Link></li>
+              <li><Link to="/privacy">Privacy Policy</Link></li>
+              <li><a href="https://github.com/jesica-rana/taxcreditscout" target="_blank" rel="noreferrer">Open source</a></li>
+            </ul>
+          </div>
         </div>
         <div className="foot-disclaim">
           <span>© 2026 CreditBowl. Informational research, not tax advice.</span>
