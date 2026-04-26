@@ -94,6 +94,8 @@ export async function POST(req: NextRequest) {
       total_high: result.report.total_estimated_high,
       credits_found: result.verified.length,
       timing_ms: result.timing_ms,
+      report: result.report,
+      profile: result.profile,
     });
   } catch (err) {
     console.error("pipeline error", err);

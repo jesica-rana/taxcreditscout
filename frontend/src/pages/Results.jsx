@@ -1,6 +1,8 @@
-import { Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import CountUp from '../components/CountUp.jsx'
+import { getSessionData } from '../lib/api.js'
 
 function getStoredReport() {
   try {
@@ -78,7 +80,34 @@ function Plan({ title, items }) {
 }
 
 function Results() {
-  const data = getStoredReport()
+  const { id } = useParams()
+  const [data, setData] = useState(() => (id ? null : getStoredReport()))
+  const [loading, setLoading] = useState(Boolean(id))
+
+  useEffect(() => {
+    if (!id) return
+    let cancelled = false
+    setLoading(true)
+    getSessionData(id).then((s) => {
+      if (cancelled) return
+      if (s?.report) {
+        setData({ report: s.report, profile: s.profile, mode: 'live', session_id: s.id })
+      }
+      setLoading(false)
+    })
+    return () => { cancelled = true }
+  }, [id])
+
+  if (loading) {
+    return (
+      <main id="main" className="page fluz-style results-editorial">
+        <section className="empty-state">
+          <p className="eyebrow">Loading…</p>
+          <h2 className="section-headline">Fetching your report.</h2>
+        </section>
+      </main>
+    )
+  }
 
   if (!data?.report) {
     return (

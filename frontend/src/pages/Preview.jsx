@@ -101,8 +101,11 @@ function Preview() {
               </p>
             </div>
             <div className="preview-credit-locked">
-              <span className="blur-amount mono">$X,XXX</span>
-              <span className="lock-hint">unlock to see</span>
+              <span className="mono">
+                {s.estimated_low === s.estimated_high
+                  ? `$${s.estimated_low.toLocaleString()}`
+                  : `$${s.estimated_low.toLocaleString()} – $${s.estimated_high.toLocaleString()}`}
+              </span>
             </div>
           </motion.li>
         ))}

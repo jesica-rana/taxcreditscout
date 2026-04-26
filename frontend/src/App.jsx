@@ -32,6 +32,8 @@ function App() {
           <Route path="/loading" element={<Loading />} />
           <Route path="/preview" element={<Preview />} />
           <Route path="/results" element={<Results />} />
+          <Route path="/results/:id" element={<Results />} />
+          <Route path="/report/:id" element={<Results />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>

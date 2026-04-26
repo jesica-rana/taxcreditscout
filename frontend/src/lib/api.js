@@ -1,14 +1,26 @@
 // Flexible API client for the Vite frontend.
 //
-// Backend (Next.js taxcreditscout) `POST /api/intake` returns:
-//   { session_id, total_low, total_high, credits_found, timing_ms }
-// — but NOT the full Report JSON (the report is rendered server-side on /results & /report).
+// `POST /api/intake` returns the full Report inline; older deploys may return
+// only summary totals (we fall back to a synthesized view in that case).
+// `GET /api/session/:id` rehydrates a stored session so a results URL works
+// after page refresh or from an emailed link.
 //
 // This client adapts to whatever the backend returns:
-//   1. If response includes `report` → use directly (future-proof)
+//   1. If response includes `report` → use directly
 //   2. Else if response has session_id + totals → keep real totals,
 //      synthesize report sections locally from activities
 //   3. Else (backend down/error) → full local fallback so UI keeps working
+
+export async function getSessionData(id) {
+  if (!id) return null
+  try {
+    const res = await fetch(`/api/session/${id}`)
+    if (!res.ok) return null
+    return await res.json()
+  } catch {
+    return null
+  }
+}
 
 const ACTIVITY_LEGACY_MAP = {
   hiredRecently: 'hired_recently',

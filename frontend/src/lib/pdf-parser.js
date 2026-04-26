@@ -17,9 +17,8 @@ let pdfjs = null
 async function loadPdfjs() {
   if (pdfjs) return pdfjs
   const mod = await import('pdfjs-dist')
-  // Worker hosted on the same CDN version pinned in package.json
   mod.GlobalWorkerOptions.workerSrc =
-    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.7.76/pdf.worker.min.mjs'
+    `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${mod.version}/pdf.worker.min.mjs`
   pdfjs = mod
   return mod
 }
