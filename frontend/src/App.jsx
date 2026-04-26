@@ -11,6 +11,7 @@ const Preview = lazy(() => import('./pages/Preview.jsx'))
 const Results = lazy(() => import('./pages/Results.jsx'))
 const Terms = lazy(() => import('./pages/Terms.jsx'))
 const Privacy = lazy(() => import('./pages/Privacy.jsx'))
+const Walkthrough = lazy(() => import('./pages/Walkthrough.jsx'))
 
 function RouteFallback() {
   return (
@@ -36,6 +37,8 @@ function App() {
           <Route path="/results" element={<Results />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
+          <Route path="/welcome" element={<Walkthrough />} />
+          <Route path="/waitlist" element={<Walkthrough />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
