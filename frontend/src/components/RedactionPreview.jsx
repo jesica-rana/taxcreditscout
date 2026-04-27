@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { PII_TYPE_LABELS } from '../lib/redactor.js'
 
 function RedactionPreview({ pages, tokens, reviewed, setReviewed, onSubmit, onReset, submitting, error }) {
@@ -90,6 +91,9 @@ function RedactionPreview({ pages, tokens, reviewed, setReviewed, onSubmit, onRe
         <button type="button" className="button secondary" onClick={onReset} disabled={submitting}>
           Use a different file
         </button>
+        <Link to="/quiz" className="button secondary">
+          Use the questionnaire
+        </Link>
         <button
           type="button"
           className="button primary large"
