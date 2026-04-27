@@ -218,10 +218,7 @@ function Results() {
           <LogoMark />
           <span>CreditBowl</span>
         </Link>
-        <div className="r-nav-links">
-          <Link to="/quiz" className="r-nav-link">Retake quiz</Link>
-          <a href="#cpa" className="r-nav-cta">CPA handoff</a>
-        </div>
+        <Link to="/upload" className="nav-cta">Find my credits — $10</Link>
       </nav>
 
       <motion.section

@@ -105,16 +105,7 @@ function Nav() {
           <LogoMark />
           <span style={{ fontFamily: 'var(--serif)', fontWeight: 400 }}>CreditBowl</span>
         </Link>
-        <nav className="nav-links">
-          <Link to="/welcome">How it works</Link>
-          <Link to="/quiz">Quiz</Link>
-          <Link to="/upload">Upload return</Link>
-          <Link to="/waitlist">Waitlist</Link>
-        </nav>
-        <div className="nav-right">
-          <Link to="/login" className="nav-signin">Sign in</Link>
-          <Link to="/upload" className="nav-cta">Find my credits — $10</Link>
-        </div>
+        <Link to="/upload" className="nav-cta">Find my credits — $10</Link>
       </div>
     </div>
   )

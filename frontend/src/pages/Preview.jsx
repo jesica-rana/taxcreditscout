@@ -68,9 +68,7 @@ function Preview() {
           <LogoMark />
           <span>CreditBowl</span>
         </Link>
-        <div className="r-nav-links">
-          <Link to="/quiz" className="r-nav-link">Retake quiz</Link>
-        </div>
+        <Link to="/upload" className="nav-cta">Find my credits — $10</Link>
       </nav>
 
       <motion.section
@@ -150,8 +148,6 @@ function Preview() {
           </div>
           <div className="r-paywall-cta">
             <ul className="r-paywall-trust">
-              <li>Money-back if we find less than $1,000</li>
-              <li>7-day full refund · no questions asked</li>
               <li>Stripe checkout · 256-bit SSL</li>
             </ul>
             <button type="button" className="btn-primary" onClick={unlock}>

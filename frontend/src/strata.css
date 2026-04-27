@@ -3796,3 +3796,56 @@
     text-transform: uppercase;
     color: var(--mute-2);
   }
+
+  /* === Color & layout polish per user feedback === */
+
+  /* Big total — keep on one line; clamp font-size on small screens */
+  .r-total {
+    white-space: nowrap;
+    font-size: clamp(40px, 8vw, 88px);
+    color: var(--paper);                /* was money green; now neutral */
+  }
+  .r-total .range-sep { white-space: nowrap; padding: 0 12px; color: var(--mute); }
+
+  /* Drop the green money color throughout — match accent purple instead */
+  .r-credit-amount,
+  .preview-total,
+  .feat-h3,
+  .total-amount,
+  .estimator-total,
+  .total-num.money,
+  .stat-num.money {
+    color: var(--accent) !important;
+  }
+
+  /* === Consistent credit-card sizing on every page === */
+  .r-credit,
+  .feat-card,
+  .credit-row,
+  .preview-card {
+    background: var(--paper-3);
+    border: 1px solid var(--line-2);
+    border-radius: 14px;
+    padding: 28px;
+    box-shadow: 0 16px 32px -16px rgba(0,0,0,0.5);
+    transition: border-color 0.2s ease, transform 0.2s ease;
+  }
+  @media (max-width: 600px) {
+    .r-credit,
+    .feat-card,
+    .credit-row,
+    .preview-card {
+      padding: 22px 18px;
+      border-radius: 12px;
+    }
+  }
+  .r-credit:hover,
+  .feat-card:hover,
+  .credit-row:hover,
+  .preview-card:hover {
+    border-color: color-mix(in srgb, var(--accent) 30%, var(--line-2));
+    transform: translateY(-1px);
+  }
+
+  /* Strip the legacy r-nav-links + r-nav-link styles from being used */
+  .r-nav-links { display: none; }
