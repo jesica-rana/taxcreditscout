@@ -3849,3 +3849,79 @@
 
   /* Strip the legacy r-nav-links + r-nav-link styles from being used */
   .r-nav-links { display: none; }
+
+  /* === Mascot theming (was missing — re-added) ===
+     Default / dark mode: white outline (invert the original blue)
+     Light mode: keep the original blue
+  */
+  .mascot-img {
+    display: block;
+    object-fit: contain;
+    flex: none;
+    filter: brightness(0) invert(1);
+    transition: filter 0.3s ease;
+  }
+  [data-theme="light"] .mascot-img {
+    filter: none;
+  }
+
+  /* === Nav alignment polish === */
+  .nav-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 0;
+  }
+  .nav-row .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--paper);
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 400;
+    letter-spacing: -0.018em;
+    line-height: 1;
+  }
+  .nav-row .nav-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1;
+    padding: 11px 18px;
+    border-radius: 999px;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+  .nav-row .nav-cta:hover {
+    background: var(--accent);
+    color: var(--paper);
+    transform: translateY(-1px);
+  }
+
+  /* Same alignment for the report page nav (Preview / Results) */
+  .r-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .r-nav .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    line-height: 1;
+  }
+
+  @media (max-width: 600px) {
+    .nav-row { padding: 14px 0; }
+    .nav-row .logo { font-size: 18px; gap: 8px; }
+    .nav-row .nav-cta { padding: 10px 14px; font-size: 13px; }
+  }

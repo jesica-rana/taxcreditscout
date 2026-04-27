@@ -81,18 +81,17 @@ function DeadlineStrip() {
   )
 }
 
-// === Logo mark — bowl variant ===
-function LogoMark() {
+// === Logo mark — bowl mascot ===
+function LogoMark({ size = 36 }) {
   return (
-    <span className="logo-mark" style={{ display: 'grid', placeItems: 'center', width: 32, height: 32 }}>
-      <svg viewBox="0 0 32 32" width="32" height="32" aria-hidden="true">
-        <ellipse cx="16" cy="11" rx="12" ry="2.5" fill="none" stroke="var(--accent)" strokeWidth="2" />
-        <path d="M 4 11 Q 4 26 16 26 Q 28 26 28 11" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" />
-        <circle cx="11" cy="17" r="1.6" fill="var(--accent)" />
-        <circle cx="16" cy="19" r="1.6" fill="var(--money)" />
-        <circle cx="21" cy="17" r="1.6" fill="var(--paper)" opacity="0.7" />
-      </svg>
-    </span>
+    <img
+      className="mascot-img"
+      src="/assets/creditbowl-logo.svg"
+      alt=""
+      width={size}
+      height={size}
+      style={{ width: size, height: size }}
+    />
   )
 }
 

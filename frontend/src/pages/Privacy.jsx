@@ -11,6 +11,7 @@ function Privacy() {
       <nav className="nav">
         <div className="wrap nav-row">
           <Link to="/" className="logo">
+            <img className="mascot-img" src="/assets/creditbowl-logo.svg" alt="" width="36" height="36" />
             <span style={{ fontFamily: 'var(--serif)', fontWeight: 400 }}>{PROJECT}</span>
           </Link>
           <div className="nav-right">
