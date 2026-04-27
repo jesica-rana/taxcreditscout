@@ -13,6 +13,28 @@ function getStoredReport() {
   }
 }
 
+// Strip protocol + www. — leaves "irs.gov/forms-pubs/about-form-5884"
+function shortUrl(url) {
+  if (!url) return ''
+  try {
+    const u = new URL(url)
+    return u.hostname.replace(/^www\./, '') + u.pathname.replace(/\/$/, '')
+  } catch {
+    return url
+  }
+}
+
+function confidencePercent(value) {
+  const n = Math.round((Number(value) || 0) * 100)
+  return Math.min(99, Math.max(0, n))
+}
+
+const QUAL_LABEL = {
+  yes: 'Qualifies',
+  likely: 'Likely qualifies',
+  no: 'Does not qualify',
+}
+
 function LogoMark({ size = 32 }) {
   return (
     <img
@@ -27,6 +49,8 @@ function LogoMark({ size = 32 }) {
 }
 
 function CreditCard({ s }) {
+  const status = s.qualification_status || 'likely'
+  const pct = confidencePercent(s.qualification_confidence)
   return (
     <motion.article
       className="r-credit"
@@ -38,9 +62,16 @@ function CreditCard({ s }) {
       <header className="r-credit-head">
         <div className="r-credit-titlewrap">
           <h3 className="r-credit-name">{s.name}</h3>
-          {s.irc_section && (
-            <span className="r-credit-tag">IRC §{s.irc_section}</span>
-          )}
+          <div className="r-credit-tagrow">
+            {s.irc_section && (
+              <span className="r-credit-tag">IRC §{s.irc_section}</span>
+            )}
+            {(s.qualification_confidence != null) && (
+              <span className={`r-credit-confidence r-credit-confidence-${status}`}>
+                {QUAL_LABEL[status] || 'Likely qualifies'} · {pct}% confidence
+              </span>
+            )}
+          </div>
         </div>
         <span className="r-credit-amount">
           ${Number(s.estimated_low).toLocaleString()} – ${Number(s.estimated_high).toLocaleString()}
@@ -58,6 +89,22 @@ function CreditCard({ s }) {
         <p className="r-credit-label">Why you qualify</p>
         <p className="r-credit-text">{s.why_you_qualify}</p>
       </div>
+
+      {s.how_we_estimated && (
+        <div className="r-credit-block">
+          <p className="r-credit-label">How we estimated this</p>
+          <p className="r-credit-text">{s.how_we_estimated}</p>
+        </div>
+      )}
+
+      {s.eligibility_criteria?.length > 0 && (
+        <div className="r-credit-block">
+          <p className="r-credit-label">Eligibility criteria</p>
+          <ul className="r-credit-steps">
+            {s.eligibility_criteria.map((step, i) => <li key={i}>{step}</li>)}
+          </ul>
+        </div>
+      )}
 
       {s.action_steps?.length > 0 && (
         <div className="r-credit-block">
@@ -77,6 +124,38 @@ function CreditCard({ s }) {
         </div>
       )}
 
+      {s.common_pitfalls?.length > 0 && (
+        <div className="r-credit-pitfalls">
+          <p className="r-credit-label r-credit-label-pitfall">Common pitfalls</p>
+          <ul className="r-credit-pitfalls-list">
+            {s.common_pitfalls.map((p, i) => <li key={i}>{p}</li>)}
+          </ul>
+        </div>
+      )}
+
+      {(s.cashflow_treatment || s.stacks_with?.length > 0 || s.typical_industry_finding) && (
+        <div className="r-credit-facts">
+          {s.cashflow_treatment && (
+            <div className="r-credit-fact">
+              <span className="r-credit-fact-label">Cashflow treatment</span>
+              <span className="r-credit-fact-value">{s.cashflow_treatment}</span>
+            </div>
+          )}
+          {s.stacks_with?.length > 0 && (
+            <div className="r-credit-fact">
+              <span className="r-credit-fact-label">Stacks with</span>
+              <span className="r-credit-fact-value">{s.stacks_with.join(' · ')}</span>
+            </div>
+          )}
+          {s.typical_industry_finding && (
+            <div className="r-credit-fact">
+              <span className="r-credit-fact-label">Typical industry finding</span>
+              <span className="r-credit-fact-value">{s.typical_industry_finding}</span>
+            </div>
+          )}
+        </div>
+      )}
+
       {s.documentation?.length > 0 && (
         <details className="r-credit-docs">
           <summary>Documentation required ({s.documentation.length})</summary>
@@ -93,6 +172,12 @@ function CreditCard({ s }) {
           <span>{s.form}</span>
           <span className="dot">·</span>
           <span>{s.deadline}</span>
+          {s.source_authority && (
+            <>
+              <span className="dot">·</span>
+              <span>{s.source_authority}</span>
+            </>
+          )}
         </p>
         {s.source_url && (
           <a
@@ -101,7 +186,7 @@ function CreditCard({ s }) {
             rel="noreferrer"
             className="r-credit-source"
           >
-            Read source ↗
+            {shortUrl(s.source_url)} ↗
           </a>
         )}
       </footer>

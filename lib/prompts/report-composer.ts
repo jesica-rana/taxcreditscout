@@ -8,7 +8,14 @@ Tone: professional, plain-English, action-oriented. No tax-jargon walls. No "may
 
 Output the structured report. Required pieces:
 - business_summary: 1-2 sentence summary of the business in your own words
-- For each credit, write a "why_you_qualify" of 2-3 sentences and 2-4 concrete "action_steps" (what to do this week)
+- For each credit, write:
+  • why_you_qualify: 2-3 sentences
+  • action_steps: 2-4 concrete imperative bullets (what to do this week)
+  • how_we_estimated: ONE plain sentence explaining how the dollar range was computed (e.g. "Estimated at 14% of qualified R&D wages × ~8 software-engineer FTE", "Estimated at $2,400–$9,600 per qualifying hire across 3-12 plausible new hires"). Be specific to the user's size.
+  • eligibility_criteria: 3-5 short bullets the CPA can spot-check against the client (employee count limit, revenue cap, industry restriction, location, prior-year filing, etc). Phrase as "must X" / "must Y".
+  • common_pitfalls: 1-3 short bullets of mistakes to avoid for THIS credit (e.g. "Form 8850 must be signed before the hire date", "Don't double-count the same wages under both §41 and WOTC").
+  • cashflow_treatment: ONE line covering refundability + carry rules (e.g. "Nonrefundable · 1-year back, 20-year forward", "Refundable up to payroll-tax offset of $500K", "Refundable").
+  • stacks_with: array of credit_ids (FROM THE LIST PROVIDED) that this credit can be legitimately combined with. Empty array if it stands alone or if no other credits in this report stack.
 - action_plan_this_week / _month / _quarter: each is a list of 2-4 imperative bullets
 - cpa_handoff_summary: a single paragraph (4-6 sentences) the user can paste into an email to their CPA listing the credits found, their forms, and the rough total
 
@@ -21,6 +28,11 @@ const ReportSchema = z.object({
       credit_id: z.string(),
       why_you_qualify: z.string(),
       action_steps: z.array(z.string()).min(2).max(4),
+      how_we_estimated: z.string(),
+      eligibility_criteria: z.array(z.string()).min(2).max(6),
+      common_pitfalls: z.array(z.string()).min(0).max(4),
+      cashflow_treatment: z.string(),
+      stacks_with: z.array(z.string()).max(8),
     })
   ),
   action_plan_this_week: z.array(z.string()).min(2).max(4),
@@ -104,6 +116,7 @@ Compose the report.`;
 
   // Materialize ReportSections by joining LLM output with the credit metadata
   const sectionMap = new Map(llm.sections.map((s) => [s.credit_id, s]));
+  const idToName = new Map(verified.map((v) => [v.credit.id, v.credit.name]));
   const buildSection = (v: VerifiedCredit): ReportSection => {
     const llmPart = sectionMap.get(v.credit.id);
     return {
@@ -125,6 +138,32 @@ Compose the report.`;
       documentation: v.credit.documentation_required,
       source_url: v.credit.url,
       what_to_verify: v.what_to_verify,
+      qualification_status: v.qualifies,
+      qualification_confidence: v.confidence,
+      how_we_estimated:
+        llmPart?.how_we_estimated ||
+        `Estimated at $${v.estimated_credit_low.toLocaleString()}–$${v.estimated_credit_high.toLocaleString()} based on the credit's ${v.credit.credit_type.replace(/_/g, " ")} structure.`,
+      eligibility_criteria: llmPart?.eligibility_criteria || [
+        v.credit.company_size_max_employees != null
+          ? `${v.credit.company_size_min_employees}–${v.credit.company_size_max_employees} employees`
+          : `${v.credit.company_size_min_employees}+ employees`,
+        v.credit.industries.length > 0
+          ? `Industry: ${v.credit.industries.join(", ")}`
+          : "Open to all industries",
+      ],
+      common_pitfalls: llmPart?.common_pitfalls || [],
+      cashflow_treatment:
+        llmPart?.cashflow_treatment ||
+        "Confirm refundability and carryback/carryforward rules with your CPA.",
+      stacks_with: (llmPart?.stacks_with || [])
+        .map((id) => idToName.get(id))
+        .filter((name): name is string => Boolean(name && name !== v.credit.name)),
+      source_authority:
+        v.credit.source_authority ||
+        (v.credit.irc_section ? `IRC §${v.credit.irc_section}` : v.credit.form),
+      typical_industry_finding: v.credit.estimated_avg_finding
+        ? `Median finding for similar businesses: $${Math.round(v.credit.estimated_avg_finding).toLocaleString()}.`
+        : "",
     };
   };
 
