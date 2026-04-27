@@ -201,7 +201,6 @@ function Footer() {
             <ul>
               <li><Link to="/upload">Upload tax return</Link></li>
               <li><Link to="/quiz">Answer 5 questions</Link></li>
-              <li><Link to="/welcome">How it works</Link></li>
               <li><a href="/waitlist/">Join waitlist</a></li>
             </ul>
           </div>

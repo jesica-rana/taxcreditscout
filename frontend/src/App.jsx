@@ -5,7 +5,6 @@ import Landing from './pages/Landing.jsx'
 
 // Lazy-load every non-landing route — keeps the entry bundle small.
 // Pages listed in funnel order: marketing → product → account → legal.
-const Walkthrough = lazy(() => import('./pages/Walkthrough.jsx'))   // /welcome
 const Quiz        = lazy(() => import('./pages/Quiz.jsx'))          // /quiz
 const Upload      = lazy(() => import('./pages/Upload.jsx'))        // /upload
 const Loading     = lazy(() => import('./pages/Loading.jsx'))       // /loading
@@ -34,8 +33,7 @@ function App() {
         <Routes>
           {/* === Marketing === */}
           <Route path="/"          element={<Landing />} />
-          <Route path="/welcome"   element={<Walkthrough />} />
-          <Route path="/about"     element={<Walkthrough />} />
+          {/* /waitlist is a standalone HTML page in public/waitlist/ — handled by Vercel rewrite, not React Router */}
 
           {/* === Product funnel === */}
           <Route path="/quiz"           element={<Quiz />} />
