@@ -3768,3 +3768,31 @@
     .r-block-title { font-size: 26px; }
     .r-cpa-card { padding: 22px 20px; font-size: 15px; }
   }
+
+  /* === Preview: blurred per-credit amounts === */
+  .r-preview-amount-blurred {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    line-height: 1.1;
+    text-align: right;
+  }
+  .r-preview-amount-blurred .blurred-text {
+    font-family: var(--num);
+    font-variant-numeric: tabular-nums;
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--paper);
+    filter: blur(7px);
+    user-select: none;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .r-preview-amount-blurred .lock-hint {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    color: var(--mute-2);
+  }
