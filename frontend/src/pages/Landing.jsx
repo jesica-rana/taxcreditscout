@@ -101,16 +101,15 @@ function Nav() {
   return (
     <div className="nav">
       <div className="wrap nav-row">
-        <a href="#" className="logo" onClick={(e) => e.preventDefault()}>
+        <Link to="/" className="logo">
           <LogoMark />
           <span style={{ fontFamily: 'var(--serif)', fontWeight: 400 }}>CreditBowl</span>
-        </a>
+        </Link>
         <nav className="nav-links">
-          <a href="#bowl">Bowl</a>
-          <a href="#coverage">Coverage</a>
-          <a href="#estimate">Estimate</a>
-          <a href="#match">Match</a>
-          <a href="#privacy">Privacy</a>
+          <Link to="/welcome">How it works</Link>
+          <Link to="/quiz">Quiz</Link>
+          <Link to="/upload">Upload return</Link>
+          <Link to="/waitlist">Waitlist</Link>
         </nav>
         <div className="nav-right">
           <Link to="/login" className="nav-signin">Sign in</Link>
@@ -198,10 +197,10 @@ function Footer() {
       <div className="wrap">
         <div className="foot-row">
           <div>
-            <a href="#" className="logo" style={{ marginBottom: 16 }}>
+            <Link to="/" className="logo" style={{ marginBottom: 16 }}>
               <LogoMark />
               <span style={{ fontFamily: 'var(--serif)' }}>CreditBowl</span>
-            </a>
+            </Link>
             <p style={{ maxWidth: '38ch', marginTop: 16, lineHeight: 1.6 }}>
               Privacy-first tax credit discovery for small businesses. Federal,
               state, and local — all in one bowl.
@@ -212,8 +211,24 @@ function Footer() {
             <ul>
               <li><Link to="/upload">Upload tax return</Link></li>
               <li><Link to="/quiz">Answer 5 questions</Link></li>
-              <li><a href="#estimate">Quick estimator</a></li>
-              <li><a href="#redactor">Privacy demo</a></li>
+              <li><Link to="/welcome">How it works</Link></li>
+              <li><Link to="/waitlist">Join waitlist</Link></li>
+            </ul>
+          </div>
+          <div>
+            <h4>Account</h4>
+            <ul>
+              <li><Link to="/login">Sign in</Link></li>
+              <li><Link to="/signup">Sign up</Link></li>
+              <li><Link to="/dashboard">Dashboard</Link></li>
+            </ul>
+          </div>
+          <div>
+            <h4>Legal</h4>
+            <ul>
+              <li><Link to="/terms">Terms &amp; Conditions</Link></li>
+              <li><Link to="/privacy">Privacy Policy</Link></li>
+              <li><a href="https://github.com/jesica-rana/taxcreditscout" target="_blank" rel="noreferrer">Open source</a></li>
             </ul>
           </div>
         </div>

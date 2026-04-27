@@ -487,9 +487,15 @@
   }
   footer .foot-row {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
     gap: 56px;
     align-items: start;
+  }
+  @media (max-width: 920px) {
+    footer .foot-row { grid-template-columns: 1fr 1fr; gap: 32px; }
+  }
+  @media (max-width: 600px) {
+    footer .foot-row { grid-template-columns: 1fr; gap: 28px; }
   }
   footer h4 {
     font-size: 11px;
