@@ -2591,10 +2591,11 @@
 
   .upload-strata .redaction-actions {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: 12px;
     flex-wrap: wrap;
   }
+  .upload-strata .redaction-actions .button.primary.large { margin-left: auto; }
   .upload-strata .button.secondary {
     background: transparent;
     color: var(--paper);
