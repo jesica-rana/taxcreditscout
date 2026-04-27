@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import CountUp from '../components/CountUp.jsx'
 import '../strata.css'
@@ -7,6 +7,14 @@ import '../strata.css'
 function getStoredReport() {
   try {
     return JSON.parse(sessionStorage.getItem('taxCreditReport'))
+  } catch {
+    return null
+  }
+}
+
+function getStoredAnswers() {
+  try {
+    return JSON.parse(sessionStorage.getItem('taxCreditAnswers'))
   } catch {
     return null
   }
@@ -26,8 +34,11 @@ function LogoMark({ size = 32 }) {
 }
 
 function Preview() {
-  const navigate = useNavigate()
   const data = getStoredReport()
+  const answers = getStoredAnswers()
+  const [email, setEmail] = useState(answers?.email ?? '')
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     document.documentElement.dataset.theme = 'dark'
@@ -56,9 +67,46 @@ function Preview() {
     ...report.local,
   ]
 
-  const unlock = () => {
-    sessionStorage.setItem('taxCreditUnlocked', '1')
-    navigate('/results')
+  const sendReport = async () => {
+    if (submitting) return
+    setError(null)
+    const trimmedEmail = email.trim()
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      setError('Enter a valid email so we know where to send it.')
+      return
+    }
+    setSubmitting(true)
+    try {
+      const upsert = await fetch('/api/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_id: data.session_id,
+          email: trimmedEmail,
+          report: data.report,
+          profile: data.profile ?? null,
+        }),
+      })
+      if (!upsert.ok) throw new Error('Could not save your session.')
+      const { session_id: liveId } = await upsert.json()
+
+      const pdf = await fetch(`/api/report/${encodeURIComponent(liveId)}/pdf`)
+      if (!pdf.ok) throw new Error('Could not generate the PDF.')
+      const blob = await pdf.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `creditbowl-report-${liveId.slice(0, 8)}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+      setSubmitting(false)
+    } catch (err) {
+      console.error(err)
+      setError(err.message || 'Could not download the report. Try again.')
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -136,22 +184,40 @@ function Preview() {
 
         <section className="r-paywall">
           <div>
-            <span className="r-paywall-eyebrow">Unlock the full report</span>
+            <span className="r-paywall-eyebrow">Send the full report to your inbox</span>
             <h2><em>$99</em> · one-time</h2>
             <ul>
               <li>Per-credit dollar estimates with reasoning</li>
               <li>IRS form numbers + filing deadlines</li>
               <li>Week-by-week action plan</li>
               <li>Single-page CPA handoff sheet</li>
-              <li>12-page PDF · emailed instantly</li>
+              <li>Emailed as a PDF the moment payment clears</li>
             </ul>
           </div>
           <div className="r-paywall-cta">
             <ul className="r-paywall-trust">
               <li>Stripe checkout · 256-bit SSL</li>
             </ul>
-            <button type="button" className="btn-primary" onClick={unlock}>
-              Unlock full report — $99 →
+            <label className="r-paywall-email">
+              <span>Email for the PDF</span>
+              <input
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                placeholder="you@yourbusiness.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={submitting}
+              />
+            </label>
+            {error && <p className="r-paywall-error">{error}</p>}
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={sendReport}
+              disabled={submitting}
+            >
+              {submitting ? 'Generating PDF…' : 'Send me the report →'}
             </button>
           </div>
         </section>

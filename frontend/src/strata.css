@@ -2033,6 +2033,37 @@
     color: var(--money);
     font-weight: 600;
   }
+  .r-paywall-email {
+    display: flex; flex-direction: column; gap: 6px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--mute);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .r-paywall-email input {
+    font-family: var(--sans);
+    font-size: 15px;
+    color: var(--paper);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px 14px;
+    text-transform: none;
+    letter-spacing: normal;
+  }
+  .r-paywall-email input:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .r-paywall-email input:disabled { opacity: 0.5; cursor: not-allowed; }
+  .r-paywall-error {
+    margin: 0;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: #ff8a8a;
+  }
 
   .r-foot {
     padding: 56px 32px 48px;
@@ -3662,9 +3693,8 @@
   .r-credit-meta .dot { color: var(--line-2); }
   .r-credit-source {
     font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 0.10em;
-    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.01em;
     padding: 7px 14px;
     border: 1px solid var(--line-2);
     border-radius: 999px;
@@ -3672,10 +3702,122 @@
     text-decoration: none;
     white-space: nowrap;
     transition: border-color 0.15s ease, background 0.15s ease;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .r-credit-source:hover {
     border-color: var(--accent);
     background: color-mix(in srgb, var(--accent) 10%, transparent);
+  }
+
+  /* Tag row — IRC + qualification confidence pill side-by-side */
+  .r-credit-tagrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .r-credit-confidence {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .r-credit-confidence-yes {
+    color: var(--money);
+    background: color-mix(in srgb, var(--money) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--money) 35%, var(--line));
+  }
+  .r-credit-confidence-likely {
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+  }
+  .r-credit-confidence-no {
+    color: var(--mute);
+    border: 1px solid var(--line-2);
+  }
+
+  /* Common pitfalls block */
+  .r-credit-pitfalls {
+    margin-top: 16px;
+    padding: 14px 18px;
+    border-left: 2px solid color-mix(in srgb, var(--warn) 60%, transparent);
+    background: color-mix(in srgb, var(--warn) 6%, var(--paper-3));
+    border-radius: 0 8px 8px 0;
+  }
+  .r-credit-label-pitfall {
+    color: var(--warn) !important;
+  }
+  .r-credit-pitfalls-list {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .r-credit-pitfalls-list li {
+    position: relative;
+    padding-left: 20px;
+    color: var(--paper);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  .r-credit-pitfalls-list li::before {
+    content: '!';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--warn) 25%, transparent);
+    color: var(--warn);
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 4px;
+  }
+
+  /* Compact facts row — cashflow / stacks / typical-finding */
+  .r-credit-facts {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 14px 16px;
+    background: color-mix(in srgb, var(--paper) 4%, transparent);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+  @media (min-width: 720px) {
+    .r-credit-facts { grid-template-columns: 1fr 1fr; }
+  }
+  .r-credit-fact {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 13px;
+  }
+  .r-credit-fact-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    color: var(--mute);
+  }
+  .r-credit-fact-value {
+    color: var(--paper);
+    line-height: 1.4;
   }
 
   /* Bigger gap between credit cards for breathing room */

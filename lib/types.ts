@@ -89,6 +89,15 @@ export interface ReportSection {
   documentation: string[];
   source_url: string;
   what_to_verify: string[]; // verifier's caveats — what the user/CPA should confirm
+  qualification_status: "yes" | "likely" | "no";
+  qualification_confidence: number; // 0-1, propagated from VerifiedCredit
+  how_we_estimated: string; // one-line explanation of the math behind the range
+  eligibility_criteria: string[]; // 3-5 bullets — who qualifies (size, industry, location, etc.)
+  common_pitfalls: string[]; // 1-3 bullets — common mistakes
+  cashflow_treatment: string; // refundable/non, carryback/forward, e.g. "Nonrefundable · 1-yr back, 20-yr forward"
+  stacks_with: string[]; // names of other credits in this report this can be combined with
+  source_authority: string; // e.g. "IRS Form 5884 instructions" / "JCT Bluebook 2024"
+  typical_industry_finding: string; // e.g. "Median agency at this size claims ~$18K"
 }
 
 export interface Report {
