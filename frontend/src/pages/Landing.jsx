@@ -207,14 +207,6 @@ function Footer() {
             </ul>
           </div>
           <div>
-            <h4>Account</h4>
-            <ul>
-              <li><Link to="/login">Sign in</Link></li>
-              <li><Link to="/signup">Sign up</Link></li>
-              <li><Link to="/dashboard">Dashboard</Link></li>
-            </ul>
-          </div>
-          <div>
             <h4>Legal</h4>
             <ul>
               <li><Link to="/terms">Terms &amp; Conditions</Link></li>
